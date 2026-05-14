@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Scam Heatmap{% endblock %}
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <div class="page-header">
+        <h1><i class="bi bi-geo-alt me-2"></i>Scam <span class="text-gradient">Heatmap</span></h1>
+        <p class="text-muted">Real-time map of scam hotspots and safe zones</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-9">
+            <div class="glass-card-static p-2">
+                <div id="scam-heatmap" class="map-container" style="height:600px;"></div>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="glass-card-static mb-3">
+                <h6><i class="bi bi-info-circle me-2 text-gradient"></i>Legend</h6>
+                <div class="d-flex align-items-center gap-2 mb-2"><span style="width:12px;height:12px;border-radius:50%;background:#10b981;display:inline-block;"></span><small class="text-muted">Low Risk</small></div>
+                <div class="d-flex align-items-center gap-2 mb-2"><span style="width:12px;height:12px;border-radius:50%;background:#f59e0b;display:inline-block;"></span><small class="text-muted">Medium Risk</small></div>
+                <div class="d-flex align-items-center gap-2 mb-2"><span style="width:12px;height:12px;border-radius:50%;background:#ef4444;display:inline-block;"></span><small class="text-muted">High Risk</small></div>
+                <div class="d-flex align-items-center gap-2"><span style="width:12px;height:12px;border-radius:50%;background:#a855f7;display:inline-block;"></span><small class="text-muted">Critical</small></div>
+            </div>
+            <div class="glass-card-static mb-3">
+                <h6><i class="bi bi-bar-chart me-2 text-gradient"></i>Quick Stats</h6>
+                <p class="small text-muted mb-0">Navigate the map to explore scam hotspots. Click on markers for details.</p>
+            </div>
+            <div class="d-grid gap-2">
+                <a href="{% url 'scams:report_create' %}" class="btn btn-danger-glow btn-sm"><i class="bi bi-flag me-1"></i>Report Scam Here</a>
+                <a href="{% url 'vendors:vendor_map' %}" class="btn btn-success-glow btn-sm"><i class="bi bi-shop me-1"></i>View Trusted Vendors</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reports = {{ reports_json|safe }};
+        const locations = {{ locations_json|safe }};
+        initScamMap('scam-heatmap', reports, locations);
+    });
+</script>
+{% endblock %}

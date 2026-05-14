@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Report a Scam{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-flag me-2"></i>Report a <span class="text-gradient">Scam</span></h1>
+        <p class="text-muted">Help fellow travelers by reporting scam incidents</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card-static">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Title *</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Category *</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Severity *</label>
+                            {{ form.severity }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Description *</label>
+                            {{ form.description }}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Location</label>
+                            {{ form.location_name }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Incident Date</label>
+                            {{ form.incident_date }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Amount Charged</label>
+                            {{ form.charged_amount }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Expected Price</label>
+                            {{ form.expected_amount }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Currency</label>
+                            {{ form.currency }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Evidence Image 1</label>
+                            {{ form.image }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Evidence Image 2</label>
+                            {{ form.image2 }}
+                        </div>
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+                    </div>
+                    <button type="submit" class="btn btn-danger-glow mt-4"><i class="bi bi-flag me-2"></i>Submit Report</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card-static mb-3">
+                <h6><i class="bi bi-info-circle me-2 text-gradient"></i>Tips</h6>
+                <ul class="list-unstyled text-muted small">
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-1"></i> Be specific about what happened</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-1"></i> Include exact amounts charged</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-1"></i> Upload photos of receipts/bills</li>
+                    <li class="mb-2"><i class="bi bi-check2 text-success me-1"></i> Include the location name</li>
+                    <li><i class="bi bi-check2 text-success me-1"></i> AI will analyze your report automatically</li>
+                </ul>
+            </div>
+            <div class="glass-card-static">
+                <h6><i class="bi bi-robot me-2 text-gradient"></i>AI Analysis</h6>
+                <p class="small text-muted">After submission, our AI will automatically analyze your report, calculate scam probability, and classify the scam type.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

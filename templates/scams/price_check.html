@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Price Check{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-calculator me-2"></i>AI Price <span class="text-gradient">Verification</span></h1>
+        <p class="text-muted">Check if you're being overcharged — AI compares with local market rates</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-search me-2"></i>Check Price</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary-glow w-100"><i class="bi bi-robot me-2"></i>Verify with AI</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            {% if result %}
+            <div class="glass-card-static fade-in">
+                <h5 class="mb-3"><i class="bi bi-robot me-2 text-gradient"></i>AI Analysis Result</h5>
+                {% if result.error %}
+                <div class="alert-glass alert-warning"><i class="bi bi-exclamation-triangle"></i><span>{{ result.message }}</span></div>
+                {% else %}
+                <div class="row g-3 mb-3 text-center">
+                    <div class="col-4">
+                        <div class="glass-card-static p-3">
+                            <small class="text-muted d-block">Verdict</small>
+                            {% if result.is_fair %}
+                            <span class="fs-4 text-success"><i class="bi bi-check-circle"></i></span>
+                            <br><small class="text-success fw-bold">Fair Price</small>
+                            {% else %}
+                            <span class="fs-4 text-danger"><i class="bi bi-x-circle"></i></span>
+                            <br><small class="text-danger fw-bold">Overpriced</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="glass-card-static p-3">
+                            <small class="text-muted d-block">Fair Range</small>
+                            <span class="fw-bold text-success">{{ result.fair_price_range|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="glass-card-static p-3">
+                            <small class="text-muted d-block">Scam Risk</small>
+                            <span class="fw-bold {% if result.scam_probability > 60 %}text-danger{% elif result.scam_probability > 30 %}text-warning{% else %}text-success{% endif %}">{{ result.scam_probability|floatformat:0 }}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="risk-meter mb-3"><div class="risk-meter-fill {% if result.scam_probability > 75 %}risk-high{% elif result.scam_probability > 50 %}risk-medium{% else %}risk-low{% endif %}" data-width="{{ result.scam_probability }}" style="width:0%;"></div></div>
+                {% if result.analysis %}
+                <div class="glass-card-static p-3 mb-3" style="border-left:3px solid var(--accent-primary);">
+                    <small class="text-muted"><i class="bi bi-stars me-1"></i>Analysis</small>
+                    <p class="small mb-0 mt-1">{{ result.analysis }}</p>
+                </div>
+                {% endif %}
+                {% if result.recommendation %}
+                <div class="glass-card-static p-3" style="border-left:3px solid var(--success);">
+                    <small class="text-muted"><i class="bi bi-lightbulb me-1"></i>Recommendation</small>
+                    <p class="small mb-0 mt-1">{{ result.recommendation }}</p>
+                </div>
+                {% endif %}
+                {% if result.local_tips %}
+                <div class="mt-3">
+                    <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>Local Tips:</small>
+                    <ul class="list-unstyled mt-1">
+                        {% for tip in result.local_tips %}
+                        <li class="small text-secondary mb-1"><i class="bi bi-check2 text-success me-1"></i>{{ tip }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="glass-card-static text-center py-5">
+                <i class="bi bi-calculator fs-1 text-muted"></i>
+                <h5 class="text-muted mt-3">Enter details to verify</h5>
+                <p class="text-muted small">AI will compare your price with local market rates</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

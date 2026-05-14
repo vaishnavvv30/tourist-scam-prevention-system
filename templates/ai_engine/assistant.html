@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}AI Assistant{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-robot me-2"></i>AI Tourist <span class="text-gradient">Assistant</span></h1>
+        <p class="text-muted">Ask about prices, safety, scams, or find trusted vendors</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card-static chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-bubble ai">
+                        Hello! I'm your ScamGuard AI assistant. I can help you with:
+                        <br><br>
+                        <strong>Price Verification</strong> — "Is ₹1500 fair for a taxi from Delhi airport?"
+                        <br><strong>Safety Tips</strong> — "Safe restaurants in Jaipur?"
+                        <br><strong>Scam Alerts</strong> — "Common scams in Bangkok?"
+                        <br><strong>Vendor Check</strong> — "Trusted tour guides in Goa?"
+                        <br><br>
+                        How can I help you today?
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="form-control" placeholder="Ask me anything about tourist safety...">
+                    <button id="chat-send" class="btn btn-primary-glow"><i class="bi bi-send"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card-static mb-3">
+                <h6><i class="bi bi-lightning me-2 text-gradient"></i>Quick Questions</h6>
+                <div class="d-grid gap-2 mt-2">
+                    <button class="btn btn-sm btn-glass text-start" onclick="document.getElementById('chat-input').value='Is this taxi fare fair: ₹800 for 10km in Mumbai?';sendChatMessage();">
+                        <i class="bi bi-taxi-front me-2"></i>Check taxi fare
+                    </button>
+                    <button class="btn btn-sm btn-glass text-start" onclick="document.getElementById('chat-input').value='What are common tourist scams in Delhi?';sendChatMessage();">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Common scams
+                    </button>
+                    <button class="btn btn-sm btn-glass text-start" onclick="document.getElementById('chat-input').value='Safe restaurants near Taj Mahal?';sendChatMessage();">
+                        <i class="bi bi-shop me-2"></i>Safe restaurants
+                    </button>
+                    <button class="btn btn-sm btn-glass text-start" onclick="document.getElementById('chat-input').value='Tips for avoiding scams as a tourist in India';sendChatMessage();">
+                        <i class="bi bi-shield-check me-2"></i>Safety tips
+                    </button>
+                </div>
+            </div>
+            <div class="glass-card-static">
+                <h6><i class="bi bi-info-circle me-2 text-gradient"></i>About AI Assistant</h6>
+                <p class="small text-muted mb-0">Powered by Groq AI (LLaMA 3.3 70B). The assistant uses local scam report data and community intelligence to provide relevant, context-aware responses.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

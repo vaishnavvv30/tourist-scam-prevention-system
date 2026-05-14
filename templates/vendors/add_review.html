@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Review {{ vendor.name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header"><h1><i class="bi bi-pencil me-2"></i>Review <span class="text-gradient">{{ vendor.name }}</span></h1></div>
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="glass-card-static">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        {% if field.name == 'is_scam_related' %}
+                        <div class="form-check">
+                            {{ field }}
+                            <label class="form-check-label text-muted" for="{{ field.id_for_label }}">This review is related to a scam incident</label>
+                        </div>
+                        {% else %}
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary-glow"><i class="bi bi-send me-2"></i>Submit Review</button>
+                    <a href="{% url 'vendors:vendor_detail' vendor.pk %}" class="btn btn-glass ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

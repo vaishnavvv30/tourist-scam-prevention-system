@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Trip to {{ trip.destination_name|default:"Destination" }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'trip_planner:dashboard' %}">Trips</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ trip.destination_name|default:"Destination" }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="mb-1">{{ trip.destination_name|default:"Your Destination" }}</h1>
+                <p class="text-muted fs-5 mb-0">
+                    <i class="bi bi-calendar-event me-2"></i>{{ trip.start_date|date:"M d, Y" }} – {{ trip.end_date|date:"M d, Y" }}
+                </p>
+            </div>
+            <a href="{% url 'trip_planner:download_trip_pdf' trip.id %}" class="btn btn-glass">
+                <i class="bi bi-download me-2"></i>Download PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="glass-card-static p-2 mb-4 d-flex gap-2 flex-wrap">
+        <a class="btn btn-primary-glow btn-sm" href="{% url 'trip_planner:trip_detail' trip.id %}">
+            <i class="bi bi-info-circle me-1"></i>Overview
+        </a>
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_itinerary' trip.id %}">
+            <i class="bi bi-card-checklist me-1"></i>Itinerary
+        </a>
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_budget' trip.id %}">
+            <i class="bi bi-wallet2 me-1"></i>Budget
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Info -->
+        <div class="col-lg-8">
+            <div class="glass-card-static mb-4">
+                <h5 class="mb-3"><i class="bi bi-card-text me-2 text-accent"></i>Trip Summary</h5>
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="stat-card text-start">
+                            <span class="text-muted d-block small mb-1">Duration</span>
+                            <span class="fs-5 fw-bold">{{ trip.duration_days }} Days</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="stat-card text-start">
+                            <span class="text-muted d-block small mb-1">Group Type</span>
+                            <span class="fs-5 fw-bold">{{ trip.get_group_type_display }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="stat-card text-start">
+                            <span class="text-muted d-block small mb-1">Total Budget Target</span>
+                            <span class="fs-5 fw-bold">₹{{ trip.budget|intcomma }}</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="stat-card text-start">
+                            <span class="text-muted d-block small mb-1">Preferences</span>
+                            <span class="fs-6">{{ trip.preferences|default:"None specified" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transport Routes -->
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-signpost-split me-2 text-accent"></i>Travel Routes</h5>
+                <div class="table-responsive">
+                    <table class="table table-glass mb-0">
+                        <thead>
+                            <tr>
+                                <th>Route</th>
+                                <th>Mode</th>
+                                <th>Est. Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for route in trip.travel_routes.all %}
+                            <tr>
+                                <td>{{ route.source }} <i class="bi bi-arrow-right mx-1 text-muted"></i> {{ route.destination }}</td>
+                                <td>
+                                    <span class="badge-glass"><i class="bi bi-car-front me-1"></i>{{ route.transport_mode }}</span>
+                                </td>
+                                <td class="fw-bold">₹{{ route.estimated_cost|intcomma }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">No specific routes generated.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="glass-card-static mb-4" style="border-left: 3px solid var(--info);">
+                <h5 class="mb-2" style="color: var(--info);"><i class="bi bi-shield-check me-2"></i>ScamGuard Safety</h5>
+                <p class="small text-muted mb-3">AI recommendations based on real scam reports.</p>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Verified vendors in this area</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Price estimates are scam-proofed</li>
+                    <li><i class="bi bi-info-circle-fill me-2" style="color: var(--info);"></i>Check the <a href="{% url 'scams:heatmap' %}">Heatmap</a> for unsafe zones</li>
+                </ul>
+            </div>
+
+            <div class="glass-card-static mb-4">
+                <h5 class="mb-2"><i class="bi bi-geo-alt me-2"></i>About {{ trip.destination_name }}</h5>
+                <p class="text-muted small mb-0">Explore the beauty and culture of this amazing destination safely.</p>
+            </div>
+
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-map me-2"></i>Interactive Map</h5>
+                <div id="tripMap" style="height: 300px; width: 100%; border-radius: var(--radius-md); overflow: hidden;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var mapEl = document.getElementById('tripMap');
+    if (mapEl) {
+        var map = L.map('tripMap').setView([10.8505, 76.2711], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        L.marker([10.8505, 76.2711]).addTo(map)
+            .bindPopup("<b>{{ trip.destination_name }}</b><br>Safe Zone area.")
+            .openPopup();
+    }
+});
+</script>
+{% endblock %}

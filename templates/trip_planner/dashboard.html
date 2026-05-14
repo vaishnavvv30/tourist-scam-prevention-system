@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}My Trips{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 page-header">
+        <h1 class="h3 mb-0"><i class="bi bi-map me-2"></i>My Trip Plans</h1>
+        <a href="{% url 'trip_planner:create_trip' %}" class="btn btn-primary-glow">
+            <i class="bi bi-plus-lg me-1"></i> Plan New Trip
+        </a>
+    </div>
+
+    {% if trips %}
+    <div class="row g-4">
+        {% for trip in trips %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-card h-100">
+                <h5 class="text-gradient mb-2">{{ trip.destination_name|default:"Unknown Destination" }}</h5>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-calendar3 me-1"></i> {{ trip.start_date|date:"M d, Y" }} – {{ trip.end_date|date:"M d, Y" }} ({{ trip.duration_days }} Days)
+                </p>
+                <p class="mb-2"><i class="bi bi-people me-2"></i><strong>Group:</strong> {{ trip.get_group_type_display }}</p>
+                <p class="mb-3"><i class="bi bi-wallet2 me-2"></i><strong>Budget:</strong> ₹{{ trip.budget|intcomma }}</p>
+
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{% url 'trip_planner:trip_detail' trip.id %}" class="btn btn-primary-glow btn-sm flex-grow-1">View Details</a>
+                    <a href="{% url 'trip_planner:trip_itinerary' trip.id %}" class="btn btn-glass btn-sm">Itinerary</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="bi bi-compass text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h3>No trips planned yet</h3>
+        <p class="text-muted">Use our AI to plan your next safe and scam-free trip.</p>
+        <a href="{% url 'trip_planner:create_trip' %}" class="btn btn-primary-glow mt-2">Create Your First Trip</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

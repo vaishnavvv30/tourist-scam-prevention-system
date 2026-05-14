@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScamGuard AI - Tourist Safety Platform</title>
+    <meta name="description" content="AI-powered tourist scam prevention. Verify prices, detect fraud, find trusted vendors worldwide.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container position-relative" style="z-index:2;">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="fade-in">
+                        <span class="badge-glass mb-3 d-inline-block"><i class="bi bi-shield-check me-1"></i> AI-Powered Protection</span>
+                        <h1 class="hero-title">
+                            Travel Smart.<br>
+                            <span class="gradient-text">Stay Protected.</span>
+                        </h1>
+                        <p class="hero-subtitle mb-4">
+                            ScamGuard AI uses artificial intelligence, OCR, and community intelligence to protect tourists from overpricing, fake guides, manipulated bills, and scam vendors worldwide.
+                        </p>
+                        <div class="d-flex gap-3 flex-wrap">
+                            <a href="{% url 'accounts:register' %}" class="btn btn-primary-glow btn-lg">
+                                <i class="bi bi-rocket-takeoff me-2"></i>Get Started Free
+                            </a>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-glass btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                            </a>
+                        </div>
+                        <div class="d-flex gap-4 mt-4">
+                            <div><span class="text-gradient fw-bold fs-4">10K+</span><br><small class="text-muted">Reports Filed</small></div>
+                            <div><span class="text-gradient fw-bold fs-4">95%</span><br><small class="text-muted">Detection Rate</small></div>
+                            <div><span class="text-gradient fw-bold fs-4">50+</span><br><small class="text-muted">Cities Covered</small></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="glass-card-static p-4" style="border-color: var(--border-glow);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="category-icon cat-taxi"><i class="bi bi-taxi-front"></i></div>
+                            <div>
+                                <h6 class="mb-0">Taxi Fare Analysis</h6>
+                                <small class="text-muted">AI Scam Detection Result</small>
+                            </div>
+                        </div>
+                        <div class="glass-card-static p-3 mb-3">
+                            <div class="row text-center g-3">
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Charged</small>
+                                    <span class="text-danger fw-bold fs-5">₹1,500</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Fair Price</small>
+                                    <span class="text-success fw-bold fs-5">₹300</span>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block">Scam Risk</small>
+                                    <span class="text-danger fw-bold fs-5">91%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="risk-meter">
+                            <div class="risk-meter-fill risk-high" style="width: 91%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">Safe</small>
+                            <small class="text-danger fw-bold">HIGH RISK SCAM</small>
+                            <small class="text-muted">Scam</small>
+                        </div>
+                        <div class="mt-3 p-3 glass-card-static" style="border-left: 3px solid var(--danger);">
+                            <small class="text-muted"><i class="bi bi-robot me-1"></i> AI Analysis:</small>
+                            <p class="small mb-0 mt-1">This taxi fare is approximately 400% above market rate for this route. The driver likely used a tampered meter or took a longer route. Recommended action: Report to authorities.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Powered by <span class="text-gradient">Artificial Intelligence</span></h2>
+                <p class="text-muted">Advanced tools to keep you safe while traveling</p>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-camera"></i></div>
+                        <h5>OCR Bill Scanner</h5>
+                        <p>Upload bills and receipts. AI extracts text and detects suspicious charges instantly.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-calculator"></i></div>
+                        <h5>Price Verification</h5>
+                        <p>Check if you're being overcharged. AI compares prices with local market rates.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-geo-alt"></i></div>
+                        <h5>Scam Heatmaps</h5>
+                        <p>Interactive maps showing scam hotspots and verified vendor zones in real-time.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-robot"></i></div>
+                        <h5>AI Assistant</h5>
+                        <p>Ask anything about local prices, safety, and trusted vendors. AI responds intelligently.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-flag"></i></div>
+                        <h5>Community Reports</h5>
+                        <p>Report scams and help fellow travelers. AI classifies and detects patterns.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-shop"></i></div>
+                        <h5>Trusted Vendors</h5>
+                        <p>Find verified restaurants, guides, and transport with trust scores and reviews.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-bell"></i></div>
+                        <h5>Real-time Alerts</h5>
+                        <p>Get notified about active scams in your area. Stay one step ahead of scammers.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-3">
+                    <div class="glass-card feature-grid-item h-100">
+                        <div class="feature-icon"><i class="bi bi-bar-chart"></i></div>
+                        <h5>Analytics</h5>
+                        <p>Comprehensive dashboard with scam trends, patterns, and community insights.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-5 mb-5">
+        <div class="container">
+            <div class="glass-card-static text-center p-5" style="border-color: var(--border-glow);">
+                <h2 class="fw-bold mb-3">Ready to Travel <span class="text-gradient">Safely</span>?</h2>
+                <p class="text-muted mb-4 mx-auto" style="max-width:600px;">Join thousands of smart travelers who use ScamGuard AI to verify prices, report scams, and find trusted vendors.</p>
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary-glow btn-lg">
+                    <i class="bi bi-shield-check me-2"></i>Create Free Account
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-scamguard">
+        <div class="container">
+            <div class="footer-bottom text-center">
+                <p class="text-muted mb-0">&copy; 2024 ScamGuard AI. Protecting tourists with artificial intelligence.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

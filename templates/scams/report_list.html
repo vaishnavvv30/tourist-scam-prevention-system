@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Scam Reports{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-flag me-2"></i>Scam <span class="text-gradient">Reports</span></h1>
+                <p class="text-muted mb-0">Community-reported scams and fraud incidents</p>
+            </div>
+            <a href="{% url 'scams:report_create' %}" class="btn btn-primary-glow"><i class="bi bi-plus-lg me-1"></i> Report Scam</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="glass-card-static mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Category</label>
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for val, label in categories %}
+                    <option value="{{ val }}" {% if current_category == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Severity</label>
+                <select name="severity" class="form-select">
+                    <option value="">All Levels</option>
+                    <option value="low" {% if current_severity == 'low' %}selected{% endif %}>Low</option>
+                    <option value="medium" {% if current_severity == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="high" {% if current_severity == 'high' %}selected{% endif %}>High</option>
+                    <option value="critical" {% if current_severity == 'critical' %}selected{% endif %}>Critical</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Search</label>
+                <input type="text" name="search" class="form-control" placeholder="Search reports..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-glass w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Reports Grid -->
+    <div class="row g-4">
+        {% for report in reports %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge-scam badge-{{ report.severity }}">{{ report.get_severity_display }}</span>
+                    <span class="badge-glass"><i class="bi bi-eye me-1"></i>{{ report.views_count }}</span>
+                </div>
+                <h6 class="mt-2 mb-1">
+                    <a href="{% url 'scams:report_detail' report.pk %}" class="text-dark text-decoration-none">{{ report.title|truncatechars:50 }}</a>
+                </h6>
+                <p class="small text-muted mb-2">{{ report.description|truncatechars:100 }}</p>
+                <div class="d-flex gap-2 flex-wrap mb-2">
+                    <span class="badge-glass"><i class="bi bi-tag me-1"></i>{{ report.get_category_display }}</span>
+                    {% if report.location_name %}
+                    <span class="badge-glass"><i class="bi bi-geo-alt me-1"></i>{{ report.location_name|truncatechars:20 }}</span>
+                    {% endif %}
+                </div>
+                {% if report.scam_probability > 0 %}
+                <div class="risk-meter">
+                    <div class="risk-meter-fill {% if report.scam_probability > 75 %}risk-high{% elif report.scam_probability > 50 %}risk-medium{% else %}risk-low{% endif %}" data-width="{{ report.scam_probability }}" style="width:0%;"></div>
+                </div>
+                <small class="text-muted">Scam Probability: {{ report.scam_probability|floatformat:0 }}%</small>
+                {% endif %}
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2" style="border-top:1px solid var(--border-glass);">
+                    <small class="text-muted">{{ report.created_at|timesince }} ago</small>
+                    <div>
+                        <span class="text-success small"><i class="bi bi-hand-thumbs-up"></i> {{ report.upvotes }}</span>
+                        <span class="text-danger small ms-2"><i class="bi bi-hand-thumbs-down"></i> {{ report.downvotes }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-shield-check fs-1 text-muted"></i>
+            <h5 class="text-muted mt-3">No scam reports found</h5>
+            <a href="{% url 'scams:report_create' %}" class="btn btn-primary-glow mt-2">Submit First Report</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if reports.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if reports.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ reports.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_severity %}&severity={{ current_severity }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo;</a></li>
+            {% endif %}
+            {% for num in reports.paginator.page_range %}
+            <li class="page-item {% if reports.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_severity %}&severity={{ current_severity }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a></li>
+            {% endfor %}
+            {% if reports.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ reports.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if current_severity %}&severity={{ current_severity }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

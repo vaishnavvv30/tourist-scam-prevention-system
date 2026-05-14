@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-bar-chart me-2"></i>Scam <span class="text-gradient">Analytics</span></h1>
+        <p class="text-muted">Community intelligence and scam trends</p>
+    </div>
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="bi bi-flag"></i></div>
+                <div class="stat-value" data-target="{{ total_reports }}">0</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="bi bi-patch-check"></i></div>
+                <div class="stat-value" data-target="{{ verified_reports }}">0</div>
+                <div class="stat-label">Verified Reports</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1;"><i class="bi bi-shop"></i></div>
+                <div class="stat-value" data-target="{{ total_vendors }}">0</div>
+                <div class="stat-label">Active Vendors</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="bi bi-shield-check"></i></div>
+                <div class="stat-value" data-target="{{ verified_vendors }}">0</div>
+                <div class="stat-label">Verified Vendors</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Chart -->
+        <div class="col-lg-7">
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-pie-chart me-2 text-gradient"></i>Scam Categories</h5>
+                <canvas id="categoryChart" height="300"></canvas>
+            </div>
+        </div>
+        <!-- Top Locations -->
+        <div class="col-lg-5">
+            <div class="glass-card-static h-100">
+                <h5 class="mb-3"><i class="bi bi-geo-alt me-2 text-gradient"></i>Top Scam Locations</h5>
+                {% for loc in top_locations %}
+                <div class="d-flex justify-content-between align-items-center py-2" {% if not forloop.last %}style="border-bottom:1px solid var(--border-glass);"{% endif %}>
+                    <div>
+                        <strong class="small">{{ loc.location_name|truncatechars:30 }}</strong>
+                        <br><small class="text-muted">Avg Risk: {{ loc.avg_probability|floatformat:0 }}%</small>
+                    </div>
+                    <span class="badge-glass">{{ loc.count }} reports</span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">No location data yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryData = {{ category_stats_json|safe }};
+    if (categoryData.length > 0 && document.getElementById('categoryChart')) {
+        const catLabels = {
+            'taxi': 'Taxi', 'restaurant': 'Restaurant', 'shopping': 'Shopping',
+            'tour_guide': 'Tour Guide', 'accommodation': 'Accommodation',
+            'street_vendor': 'Street Vendor', 'currency': 'Currency',
+            'ticket': 'Tickets', 'pickpocket': 'Pickpocket', 'other': 'Other'
+        };
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categoryData.map(d => catLabels[d.category] || d.category),
+                datasets: [{
+                    data: categoryData.map(d => d.count),
+                    backgroundColor: ['#6366f1','#8b5cf6','#ec4899','#ef4444','#f59e0b','#10b981','#06b6d4','#3b82f6','#f97316','#64748b'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 15, font: { size: 12 } } }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

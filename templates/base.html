@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ScamGuard AI{% endblock %} | Tourist Safety Platform</title>
+    <meta name="description" content="{% block meta_description %}AI-powered tourist scam prevention platform. Verify prices, report scams, find trusted vendors.{% endblock %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Travel Theme Background -->
+    <div class="travel-bg" aria-hidden="true">
+        <i class="bi bi-airplane travel-icon"></i>
+        <i class="bi bi-compass travel-icon"></i>
+        <i class="bi bi-map travel-icon"></i>
+        <i class="bi bi-globe-americas travel-icon"></i>
+        <i class="bi bi-signpost-split travel-icon"></i>
+        <i class="bi bi-luggage travel-icon"></i>
+        <i class="bi bi-pin-map travel-icon"></i>
+        <i class="bi bi-binoculars travel-icon"></i>
+        <i class="bi bi-sunrise travel-icon"></i>
+        <i class="bi bi-camera travel-icon"></i>
+    </div>
+
+    {% if user.is_authenticated %}
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-scamguard">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'accounts:dashboard' %}">
+                <span class="brand-icon"><i class="bi bi-shield-check"></i></span>
+                ScamGuard AI
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <i class="bi bi-list text-white fs-4"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.namespace == 'accounts' %}active{% endif %}" href="{% url 'accounts:dashboard' %}">
+                            <i class="bi bi-grid-1x2 me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'report_list' or request.resolver_match.url_name == 'report_detail' or request.resolver_match.url_name == 'report_create' %}active{% endif %}" href="{% url 'scams:report_list' %}">
+                            <i class="bi bi-flag me-1"></i> Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'vendors' in request.resolver_match.namespace %}active{% endif %}" href="{% url 'vendors:vendor_list' %}">
+                            <i class="bi bi-shop me-1"></i> Vendors
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'trip_planner' %}active{% endif %}" href="{% url 'trip_planner:dashboard' %}">
+                            <i class="bi bi-map me-1"></i> Trip Planner
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'price_check' %}active{% endif %}" href="{% url 'scams:price_check' %}">
+                            <i class="bi bi-calculator me-1"></i> Price Check
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'scams:heatmap' %}">
+                            <i class="bi bi-geo-alt me-1"></i> Heatmap
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ai_engine:assistant' %}">
+                            <i class="bi bi-robot me-1"></i> AI Assistant
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics:overview' %}">
+                            <i class="bi bi-bar-chart me-1"></i> Analytics
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav align-items-center">
+                    <li class="nav-item me-2">
+                        <button class="btn btn-sm btn-glass theme-toggle-btn" id="themeToggle" title="Toggle Dark/Light Mode" style="padding: 0.35rem 0.75rem;">
+                            <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
+                            <span class="ms-1 d-none d-md-inline" id="themeLabel">Dark</span>
+                        </button>
+                    </li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="{% url 'alerts:alert_list' %}">
+                            <i class="bi bi-bell"></i>
+                            {% if active_alerts_count > 0 %}
+                            <span class="nav-alert-badge" id="alert-badge">{{ active_alerts_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> {{ user.first_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:travel_history' %}"><i class="bi bi-globe me-2"></i>Travel History</a></li>
+                            {% if user.is_staff %}
+                            <li><hr class="dropdown-divider" style="border-color:var(--border-glass);"></li>
+                            <li><a class="dropdown-item" href="{% url 'analytics:admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="bi bi-gear me-2"></i>Admin Panel</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider" style="border-color:var(--border-glass);"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert-glass alert-{{ message.tags }} alert-auto-dismiss fade-in">
+            <i class="bi {% if message.tags == 'success' %}bi-check-circle{% elif message.tags == 'error' %}bi-x-circle{% elif message.tags == 'warning' %}bi-exclamation-triangle{% else %}bi-info-circle{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Content -->
+    <main class="position-relative" style="z-index:1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% if user.is_authenticated %}
+    <!-- Footer -->
+    <footer class="footer-scamguard">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <h5 class="text-gradient"><i class="bi bi-shield-check me-2"></i>ScamGuard AI</h5>
+                    <p class="text-muted">AI-powered tourist safety platform. Protecting travelers worldwide from scams and fraud.</p>
+                </div>
+                <div class="col-lg-2">
+                    <h5>Platform</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'scams:report_list' %}">Scam Reports</a></li>
+                        <li class="mb-2"><a href="{% url 'vendors:vendor_list' %}">Vendors</a></li>
+                        <li class="mb-2"><a href="{% url 'scams:heatmap' %}">Heatmap</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2">
+                    <h5>Tools</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="{% url 'scams:price_check' %}">Price Check</a></li>
+                        <li class="mb-2"><a href="{% url 'scams:bill_upload' %}">Bill Analyzer</a></li>
+                        <li class="mb-2"><a href="{% url 'ai_engine:assistant' %}">AI Assistant</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <h5>Stay Safe</h5>
+                    <p class="text-muted small">Always verify prices before paying. Report suspicious activity to help fellow travelers stay safe.</p>
+                </div>
+            </div>
+            <div class="footer-bottom text-center">
+                <p class="text-muted mb-0">&copy; 2024 ScamGuard AI. Built with Django & Groq AI.</p>
+            </div>
+        </div>
+    </footer>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+    // Theme toggle
+    (function() {
+        var html = document.documentElement;
+        var saved = localStorage.getItem('scamguard-theme') || 'light';
+        html.setAttribute('data-theme', saved);
+        document.addEventListener('DOMContentLoaded', function() {
+            var btn = document.getElementById('themeToggle');
+            var icon = document.getElementById('themeIcon');
+            var label = document.getElementById('themeLabel');
+            function applyTheme(theme) {
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('scamguard-theme', theme);
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun-fill';
+                    label.textContent = 'Light';
+                } else {
+                    icon.className = 'bi bi-moon-stars-fill';
+                    label.textContent = 'Dark';
+                }
+            }
+            applyTheme(saved);
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    var current = html.getAttribute('data-theme');
+                    applyTheme(current === 'dark' ? 'light' : 'dark');
+                });
+            }
+        });
+    })();
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

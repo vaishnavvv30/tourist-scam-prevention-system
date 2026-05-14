@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Alerts{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-bell me-2"></i>Scam <span class="text-gradient">Alerts</span></h1>
+        <p class="text-muted">Real-time safety alerts for tourists</p>
+    </div>
+    {% for alert in alerts %}
+    <div class="glass-card-static mb-3 {% if alert.pk in read_ids %}opacity-50{% endif %}" id="alert-{{ alert.pk }}" style="border-left: 4px solid {{ alert.alert_color }};">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex gap-3">
+                <div>
+                    <i class="bi {{ alert.alert_icon }} fs-4" style="color:{{ alert.alert_color }};"></i>
+                </div>
+                <div>
+                    <h6 class="mb-1">
+                        <a href="{% url 'alerts:alert_detail' alert.pk %}" class="text-dark text-decoration-none">{{ alert.title }}</a>
+                    </h6>
+                    <p class="small text-muted mb-1">{{ alert.description|truncatechars:150 }}</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if alert.city %}<span class="badge-glass"><i class="bi bi-geo-alt me-1"></i>{{ alert.city }}</span>{% endif %}
+                        {% if alert.category %}<span class="badge-glass">{{ alert.category }}</span>{% endif %}
+                        <span class="badge-glass">{{ alert.reports_count }} reports</span>
+                    </div>
+                </div>
+            </div>
+            <div class="text-end">
+                <small class="text-muted d-block">{{ alert.created_at|timesince }} ago</small>
+                {% if alert.pk not in read_ids %}
+                <button class="btn btn-sm btn-glass mt-1" onclick="markAlertRead({{ alert.pk }})">Mark read</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="glass-card-static text-center py-5">
+        <i class="bi bi-shield-check fs-1 text-success"></i>
+        <h5 class="text-muted mt-3">No active alerts</h5>
+        <p class="text-muted">All clear! No scam alerts in your area right now.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

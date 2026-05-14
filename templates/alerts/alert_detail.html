@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Alert: {{ alert.title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'alerts:alert_list' %}">Alerts</a></li><li class="breadcrumb-item active">{{ alert.title|truncatechars:40 }}</li></ol></nav>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="glass-card-static" style="border-left: 4px solid {{ alert.alert_color }};">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <i class="bi {{ alert.alert_icon }} fs-2" style="color:{{ alert.alert_color }};"></i>
+                    <div>
+                        <span class="badge-scam badge-{{ alert.alert_level }}">{{ alert.get_alert_level_display }}</span>
+                        <h3 class="mt-1 mb-0">{{ alert.title }}</h3>
+                    </div>
+                </div>
+                <p>{{ alert.description }}</p>
+                <div class="d-flex gap-2 flex-wrap mt-3">
+                    {% if alert.city %}<span class="badge-glass"><i class="bi bi-geo-alt me-1"></i>{{ alert.city }}</span>{% endif %}
+                    {% if alert.category %}<span class="badge-glass"><i class="bi bi-tag me-1"></i>{{ alert.category }}</span>{% endif %}
+                    <span class="badge-glass"><i class="bi bi-flag me-1"></i>{{ alert.reports_count }} reports</span>
+                    <span class="badge-glass"><i class="bi bi-people me-1"></i>{{ alert.affected_tourists }} tourists affected</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="glass-card-static text-center">
+                <small class="text-muted d-block">Alert Status</small>
+                {% if alert.is_active %}<span class="badge-high mt-1 d-inline-block">ACTIVE</span>{% else %}<span class="badge-verified">Resolved</span>{% endif %}
+                <div class="mt-3">
+                    <small class="text-muted d-block">Created</small>
+                    <span>{{ alert.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% if alert.expires_at %}
+                <div class="mt-2">
+                    <small class="text-muted d-block">Expires</small>
+                    <span>{{ alert.expires_at|date:"M d, Y H:i" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

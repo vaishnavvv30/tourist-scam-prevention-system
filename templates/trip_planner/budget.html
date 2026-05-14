@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Budget – {{ trip.destination_name|default:"Trip" }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'trip_planner:dashboard' %}">Trips</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'trip_planner:trip_detail' trip.id %}">{{ trip.destination_name|default:"Destination" }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Budget Analysis</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-pie-chart-fill me-2"></i>Budget Estimation</h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="glass-card-static p-2 mb-4 d-flex gap-2 flex-wrap">
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_detail' trip.id %}">
+            <i class="bi bi-info-circle me-1"></i>Overview
+        </a>
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_itinerary' trip.id %}">
+            <i class="bi bi-card-checklist me-1"></i>Itinerary
+        </a>
+        <a class="btn btn-primary-glow btn-sm" href="{% url 'trip_planner:trip_budget' trip.id %}">
+            <i class="bi bi-wallet2 me-1"></i>Budget
+        </a>
+    </div>
+
+    {% if budget %}
+    <div class="row g-4">
+        <!-- Budget Chart -->
+        <div class="col-lg-6">
+            <div class="glass-card-static h-100 d-flex flex-column">
+                <h5 class="mb-3">Expense Breakdown</h5>
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                    <canvas id="budgetChart" style="max-height: 300px; width: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense List -->
+        <div class="col-lg-6">
+            <div class="glass-card-static h-100">
+                <h5 class="mb-3">Estimated Costs</h5>
+                <div class="d-flex flex-column gap-0">
+                    <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div><i class="bi bi-building me-2" style="color: var(--info);"></i>Hotel / Stay</div>
+                        <span class="fw-bold">₹{{ budget.estimated_hotel_cost|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div><i class="bi bi-cup-hot me-2" style="color: var(--warning);"></i>Food & Dining</div>
+                        <span class="fw-bold">₹{{ budget.estimated_food_cost|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div><i class="bi bi-car-front me-2" style="color: var(--accent-primary);"></i>Transport</div>
+                        <span class="fw-bold">₹{{ budget.estimated_transport_cost|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div><i class="bi bi-ticket-perforated me-2" style="color: var(--success);"></i>Activities & Entry Fees</div>
+                        <span class="fw-bold">₹{{ budget.estimated_activities_cost|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
+                        <div><i class="bi bi-shield-exclamation me-2" style="color: var(--danger);"></i>Emergency Buffer</div>
+                        <span class="fw-bold">₹{{ budget.emergency_buffer|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-3">
+                        <h5 class="mb-0 text-gradient">Total Estimated</h5>
+                        <h5 class="mb-0 text-gradient fw-bold">₹{{ budget.total_estimated|intcomma }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Tiers -->
+        <div class="col-lg-12">
+            <div class="glass-card-static">
+                <h5 class="mb-4"><i class="bi bi-bar-chart-steps me-2"></i>Budget Tiers</h5>
+                <div class="row text-center g-3">
+                    <div class="col-md-4">
+                        <div class="stat-card h-100">
+                            <i class="bi bi-wallet2 text-muted fs-2 d-block mb-2"></i>
+                            <h6 class="text-muted">Minimum (Backpacker)</h6>
+                            <h4 class="mb-0 fw-bold">₹{{ budget.minimum_budget|intcomma }}</h4>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card h-100 glow-border position-relative">
+                            <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill" style="background: var(--accent-gradient);">Recommended</span>
+                            <i class="bi bi-star fs-2 d-block mb-2" style="color: var(--accent-primary);"></i>
+                            <h6 style="color: var(--accent-primary);">Standard Plan</h6>
+                            <h4 class="mb-1 fw-bold">₹{{ budget.total_estimated|intcomma }}</h4>
+                            <small class="text-muted">Matches your target ₹{{ trip.budget|intcomma }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-card h-100">
+                            <i class="bi bi-gem fs-2 d-block mb-2" style="color: var(--warning);"></i>
+                            <h6 style="color: var(--warning);">Luxury / Premium</h6>
+                            <h4 class="mb-0 fw-bold">₹{{ budget.luxury_budget|intcomma }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-5 glass-card-static">
+        <i class="bi bi-calculator text-muted mb-3" style="font-size: 3rem;"></i>
+        <h4>No Budget Analysis Available</h4>
+        <p class="text-muted">Budget information was not generated for this trip.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if budget %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('budgetChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Hotel', 'Food', 'Transport', 'Activities', 'Emergency'],
+                datasets: [{
+                    data: [
+                        {{ budget.estimated_hotel_cost|stringformat:"f" }},
+                        {{ budget.estimated_food_cost|stringformat:"f" }},
+                        {{ budget.estimated_transport_cost|stringformat:"f" }},
+                        {{ budget.estimated_activities_cost|stringformat:"f" }},
+                        {{ budget.emergency_buffer|stringformat:"f" }}
+                    ],
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#f59e0b',
+                        '#14b8a6',
+                        '#10b981',
+                        '#ef4444'
+                    ],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#475569',
+                            padding: 20,
+                            font: { size: 13 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed !== null) {
+                                    label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}

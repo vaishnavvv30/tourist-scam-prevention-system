@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Bill Analysis{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'scams:bill_upload' %}">Bills</a></li><li class="breadcrumb-item active">Analysis</li></ol></nav>
+        <h1><i class="bi bi-receipt me-2"></i>Bill <span class="text-gradient">Analysis</span></h1>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3">Bill Details</h5>
+                {% if bill.image %}<img src="{{ bill.image.url }}" alt="Bill" class="img-fluid rounded mb-3" style="border:1px solid var(--border-glass);">{% endif %}
+                <p><strong>Type:</strong> {{ bill.get_bill_type_display }}</p>
+                <p><strong>Location:</strong> {{ bill.location_name|default:"N/A" }}</p>
+                <p><strong>Total:</strong> {{ bill.currency }} {{ bill.total_amount|default:"N/A" }}</p>
+                <p><strong>Uploaded:</strong> {{ bill.created_at|date:"M d, Y H:i" }}</p>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            {% if ocr_result %}
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-search me-2 text-gradient"></i>OCR Extraction</h5>
+                <div class="glass-card-static p-3 mb-3" style="max-height:200px;overflow-y:auto;">
+                    <pre class="text-secondary small mb-0" style="white-space:pre-wrap;">{{ ocr_result.extracted_text }}</pre>
+                </div>
+                <div class="row g-2 text-center mb-3">
+                    <div class="col-4">
+                        <div class="glass-card-static p-2">
+                            <small class="text-muted d-block">Detected Total</small>
+                            <span class="fw-bold">{{ bill.currency }} {{ ocr_result.total_detected|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="glass-card-static p-2">
+                            <small class="text-muted d-block">Fair Estimate</small>
+                            <span class="fw-bold text-success">{{ bill.currency }} {{ ocr_result.fair_price_estimate|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="glass-card-static p-2">
+                            <small class="text-muted d-block">Scam Risk</small>
+                            <span class="fw-bold {% if ocr_result.scam_probability > 60 %}text-danger{% else %}text-success{% endif %}">{{ ocr_result.scam_probability|floatformat:0 }}%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="risk-meter"><div class="risk-meter-fill {% if ocr_result.scam_probability > 75 %}risk-high{% elif ocr_result.scam_probability > 50 %}risk-medium{% else %}risk-low{% endif %}" data-width="{{ ocr_result.scam_probability }}" style="width:0%;"></div></div>
+            </div>
+
+            {% if ocr_result.suspicious_charges %}
+            <div class="glass-card-static mb-3" style="border-left:3px solid var(--danger);">
+                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Suspicious Charges</h6>
+                <ul class="list-unstyled mb-0 mt-2">
+                    {% for charge in ocr_result.suspicious_charges %}
+                    <li class="small text-secondary mb-1"><i class="bi bi-x-circle text-danger me-1"></i>{{ charge }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if ocr_result.analysis_notes %}
+            <div class="glass-card-static" style="border-left:3px solid var(--accent-primary);">
+                <h6><i class="bi bi-robot me-2 text-gradient"></i>AI Notes</h6>
+                <p class="small text-secondary mb-0">{{ ocr_result.analysis_notes }}</p>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="glass-card-static text-center py-5">
+                <div class="spinner-glow mx-auto mb-3"></div>
+                <p class="text-muted">Analysis is being processed...</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

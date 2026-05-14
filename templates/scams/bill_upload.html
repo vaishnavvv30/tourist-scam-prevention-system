@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Bill Analyzer{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="page-header">
+        <h1><i class="bi bi-camera me-2"></i>OCR Bill <span class="text-gradient">Analyzer</span></h1>
+        <p class="text-muted">Upload bills and receipts for AI-powered analysis</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-cloud-upload me-2"></i>Upload Bill</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary-glow w-100"><i class="bi bi-search me-2"></i>Analyze Bill</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-clock-history me-2"></i>Recent Bills</h5>
+                {% if recent_bills %}
+                {% for bill in recent_bills %}
+                <a href="{% url 'scams:bill_detail' bill.pk %}" class="d-flex justify-content-between align-items-center py-2 text-decoration-none" {% if not forloop.last %}style="border-bottom:1px solid var(--border-glass);"{% endif %}>
+                    <div>
+                        <span class="text-dark">{{ bill.get_bill_type_display }}</span>
+                        <br><small class="text-muted">{{ bill.location_name|default:"Unknown" }} &middot; {{ bill.created_at|timesince }} ago</small>
+                    </div>
+                    <div class="text-end">
+                        {% if bill.total_amount %}<span class="text-dark">{{ bill.currency }} {{ bill.total_amount }}</span>{% endif %}
+                        <br>{% if bill.is_analyzed %}<span class="badge-verified">Analyzed</span>{% else %}<span class="badge-pending">Pending</span>{% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted text-center py-3">No bills uploaded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

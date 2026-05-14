@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Itinerary – {{ trip.destination_name|default:"Trip" }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="page-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'trip_planner:dashboard' %}">Trips</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'trip_planner:trip_detail' trip.id %}">{{ trip.destination_name|default:"Destination" }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Itinerary</li>
+            </ol>
+        </nav>
+        <h1><i class="bi bi-card-checklist me-2"></i>Day-by-Day Itinerary</h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="glass-card-static p-2 mb-4 d-flex gap-2 flex-wrap">
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_detail' trip.id %}">
+            <i class="bi bi-info-circle me-1"></i>Overview
+        </a>
+        <a class="btn btn-primary-glow btn-sm" href="{% url 'trip_planner:trip_itinerary' trip.id %}">
+            <i class="bi bi-card-checklist me-1"></i>Itinerary
+        </a>
+        <a class="btn btn-glass btn-sm" href="{% url 'trip_planner:trip_budget' trip.id %}">
+            <i class="bi bi-wallet2 me-1"></i>Budget
+        </a>
+    </div>
+
+    {% if itineraries %}
+    {% for day in itineraries %}
+    <div class="glass-card-static mb-4">
+        <div class="d-flex align-items-center mb-3">
+            <div class="d-flex align-items-center justify-content-center me-3 rounded-circle"
+                 style="width: 44px; height: 44px; background: var(--accent-gradient); color: #fff; font-weight: 700; font-size: 1.1rem; flex-shrink: 0;">
+                {{ day.day_number }}
+            </div>
+            <div>
+                <h4 class="mb-0">Day {{ day.day_number }}</h4>
+                <span class="text-muted small">{{ day.description }}</span>
+            </div>
+        </div>
+
+        {% for item in day.items.all %}
+        <div class="d-flex align-items-start gap-3 py-3 {% if not forloop.last %}border-bottom{% endif %}" style="border-color: var(--border-glass) !important;">
+            <span class="badge-glass text-nowrap" style="min-width: 140px; text-align: center;">
+                <i class="bi bi-clock me-1"></i>{{ item.time_str }}
+            </span>
+            <div class="flex-grow-1">
+                <h6 class="mb-1">{{ item.activity_title }}</h6>
+                <p class="text-muted small mb-0">{{ item.description }}</p>
+            </div>
+            <span class="fw-bold text-nowrap" style="color: var(--success);">₹{{ item.estimated_cost|intcomma }}</span>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted py-3 mb-0">No activities scheduled for this day.</p>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center py-5 glass-card-static">
+        <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
+        <h4>No Itinerary Available</h4>
+        <p class="text-muted">It looks like the AI couldn't generate an itinerary or it's still processing.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Plan a Trip{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card-static">
+                <h2 class="text-gradient mb-2">
+                    <i class="bi bi-robot me-2"></i>AI Trip Planner
+                </h2>
+                <p class="text-muted mb-4">Tell us about your next adventure, and our AI will build a personalized, scam-free itinerary with budget estimates.</p>
+
+                <form method="post" id="plannerForm">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="mt-4 d-grid">
+                        <button type="submit" class="btn btn-primary-glow btn-lg" id="submitBtn">
+                            <span id="btnText"><i class="bi bi-magic me-2"></i>Generate Smart Plan</span>
+                            <span id="btnLoader" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                AI is planning your trip...
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('plannerForm').addEventListener('submit', function() {
+        document.getElementById('btnText').classList.add('d-none');
+        document.getElementById('btnLoader').classList.remove('d-none');
+        document.getElementById('submitBtn').disabled = true;
+    });
+</script>
+{% endblock %}
