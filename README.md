@@ -137,3 +137,5 @@ tourist-scam-prevention/
 ## 📝 License
 
 Built for educational and demonstration purposes.
+
+## Added Trip Planner Feature
