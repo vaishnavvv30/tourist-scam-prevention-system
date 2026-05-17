@@ -6,33 +6,39 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-def generate_trip_plan(destination, duration_days, budget, group_type, preferences):
+def generate_trip_plan(destination, duration_days, budget, currency, group_type, preferences):
     """Generate an AI-powered trip itinerary and budget estimation."""
     client = get_groq_client()
     
     if not client:
         return _fallback_trip_plan(destination, duration_days, budget)
 
-    prompt = f"""You are an AI Travel Planner and Scam Prevention Expert.
+    prompt = f"""You are an AI Travel Planner and Scam Prevention Expert with deep knowledge of real-world travel pricing.
 Plan a trip to {destination} for {duration_days} days.
-Budget: {budget} INR
+Budget: {budget} {currency}
 Group Type: {group_type}
 Preferences: {preferences}
 
 Important:
 1. Ensure the trip avoids common tourist scams and highlights safe areas.
-2. Provide a daily itinerary.
-3. Provide a realistic budget breakdown.
-4. Give a minimum and luxury budget estimate.
+2. COMPLETE DAILY MEALS: Every single day MUST explicitly include "Breakfast", "Lunch", and "Dinner" as separate activities at realistic times.
+3. REAL VENUE NAMES: Use EXACT, REAL, location-specific restaurant, hotel, and attraction names (e.g. "Lunch at Paragon Restaurant" or "Visit Sree Padmanabhaswamy Temple"). Do NOT use generic text like "Local restaurant" or "Nearby cafe".
+4. ACCURATE ATTRACTIONS: Group attractions logically by proximity. Do not repeat places.
+5. Provide a hyper-realistic budget breakdown tailored to {destination} in {currency}.
+6. Give a minimum and luxury budget estimate in {currency}.
+7. Travel routes MUST reflect accurate real-world distances, transport modes (taxi, metro, bus), and actual local transit costs. Do not use generic fake data.
 
 Respond strictly in this JSON format:
 {{
     "itinerary": [
         {{
             "day": 1,
-            "description": "Arrival and local exploration",
+            "description": "Arrival and Check-in to [Real Hotel Name]",
             "activities": [
-                {{"time": "09:00 AM - 11:00 AM", "title": "Visit Waterfall", "description": "Safe, scenic spot", "cost_estimate": 100}}
+                {{"time": "08:30 AM - 09:30 AM", "title": "Breakfast at [Real Restaurant Name]", "description": "Safe, scenic spot", "cost_estimate": 100}},
+                {{"time": "10:00 AM - 01:00 PM", "title": "Visit [Real Attraction Name]", "description": "Historic fort and safe area", "cost_estimate": 50}},
+                {{"time": "01:00 PM - 02:00 PM", "title": "Lunch at [Real Restaurant Name]", "description": "Try traditional cuisine", "cost_estimate": 200}},
+                {{"time": "06:30 PM - 08:00 PM", "title": "Dinner at [Real Restaurant Name]", "description": "Relaxing dinner", "cost_estimate": 300}}
             ]
         }}
     ],
@@ -86,10 +92,13 @@ def _fallback_trip_plan(destination, duration_days, budget):
     for d in range(1, duration_days + 1):
         itinerary.append({
             "day": d,
-            "description": f"Explore {destination} Day {d}",
+            "description": f"Explore {destination} - Day {d}",
             "activities": [
-                {"time": "10:00 AM - 01:00 PM", "title": "Local Sightseeing", "description": "Check local safe spots", "cost_estimate": 200},
-                {"time": "02:00 PM - 05:00 PM", "title": "Cultural Activity", "description": "Enjoy local culture safely", "cost_estimate": 300}
+                {"time": "08:30 AM - 09:30 AM", "title": f"Breakfast at popular cafe in {destination}", "description": "Start the day with local breakfast", "cost_estimate": 150},
+                {"time": "10:00 AM - 01:00 PM", "title": f"Visit {destination} Central Attractions", "description": "Explore main city highlights safely", "cost_estimate": 200},
+                {"time": "01:00 PM - 02:00 PM", "title": f"Lunch at top-rated restaurant in {destination}", "description": "Authentic regional cuisine", "cost_estimate": 300},
+                {"time": "02:30 PM - 05:30 PM", "title": f"Afternoon sightseeing at {destination} landmarks", "description": "Cultural and historical exploration", "cost_estimate": 250},
+                {"time": "07:00 PM - 08:30 PM", "title": f"Dinner at recommended restaurant in {destination}", "description": "Evening dining experience", "cost_estimate": 400}
             ]
         })
         

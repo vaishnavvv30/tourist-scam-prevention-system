@@ -6,8 +6,16 @@ from .forms import TripPlannerForm
 from .services import generate_trip_plan
 
 
+from django.core.management import call_command
+
 @login_required
 def planner_dashboard(request):
+    try:
+        call_command('makemigrations', 'trip_planner', interactive=False)
+        call_command('migrate', 'trip_planner', interactive=False)
+    except Exception as e:
+        print(f"Migration error: {e}")
+        
     trips = Trip.objects.filter(user=request.user).select_related('destination').order_by('-created_at')
     return render(request, 'trip_planner/dashboard.html', {'trips': trips})
 
@@ -25,6 +33,7 @@ def create_trip(request):
                 destination=trip.destination_name,
                 duration_days=trip.duration_days,
                 budget=trip.budget,
+                currency=trip.currency,
                 group_type=trip.group_type,
                 preferences=trip.preferences
             )

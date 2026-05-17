@@ -1,0 +1,2 @@
+About AI Assistant
+Powered by Groq AI (LLaMA 3.3 70B). The assistant uses local scam report data and community intelligence to provide relevant, context-aware responses.

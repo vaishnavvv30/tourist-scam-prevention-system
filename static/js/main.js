@@ -223,42 +223,4 @@ function initScamMap(elementId, reports, locations) {
     return map;
 }
 
-// Initialize Vendor map
-function initVendorMap(elementId, vendors) {
-    if (!document.getElementById(elementId)) return;
 
-    const map = L.map(elementId).setView([20.5937, 78.9629], 5);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        maxZoom: 19
-    }).addTo(map);
-
-    if (vendors && vendors.length > 0) {
-        vendors.forEach(v => {
-            if (v.latitude && v.longitude && v.latitude !== 0) {
-                const color = v.is_verified ? '#10b981' : '#f59e0b';
-                const marker = L.circleMarker([v.latitude, v.longitude], {
-                    radius: 8,
-                    fillColor: color,
-                    color: color,
-                    weight: 2,
-                    opacity: 0.8,
-                    fillOpacity: 0.5
-                }).addTo(map);
-
-                marker.bindPopup(`
-                    <div style="color:#333;min-width:200px;">
-                        <strong>${v.name}</strong><br>
-                        <small>${v.category} | ${v.city}</small><br>
-                        <small>Trust: ${v.trust_score}/100 | Rating: ${v.safety_rating}/5</small><br>
-                        ${v.is_verified ? '<span style="color:#10b981;">✓ Verified</span>' : ''}
-                        <br><a href="/vendors/${v.id}/" style="color:#14b8a6;">View Details →</a>
-                    </div>
-                `);
-            }
-        });
-    }
-
-    return map;
-}

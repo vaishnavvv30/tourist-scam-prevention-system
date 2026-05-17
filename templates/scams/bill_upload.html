@@ -1,48 +1,239 @@
 {% extends 'base.html' %}
-{% block title %}Bill Analyzer{% endblock %}
+{% block title %}AI Bill Analyzer{% endblock %}
 {% block content %}
 <div class="container py-4">
     <div class="page-header">
-        <h1><i class="bi bi-camera me-2"></i>OCR Bill <span class="text-gradient">Analyzer</span></h1>
-        <p class="text-muted">Upload bills and receipts for AI-powered analysis</p>
-    </div>
-    <div class="row g-4">
-        <div class="col-lg-5">
-            <div class="glass-card-static">
-                <h5 class="mb-3"><i class="bi bi-cloud-upload me-2"></i>Upload Bill</h5>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                    </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-primary-glow w-100"><i class="bi bi-search me-2"></i>Analyze Bill</button>
-                </form>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-receipt-cutoff me-2"></i>AI Bill <span class="text-gradient">Analyzer</span></h1>
+                <p class="text-muted mb-0">Upload bills, receipts & invoices — AI detects overcharging, hidden fees, and scam pricing</p>
             </div>
         </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Upload Section -->
+        <div class="col-lg-5">
+            <div class="glass-card-static h-100">
+                <h5 class="mb-3"><i class="bi bi-cloud-arrow-up me-2 text-gradient"></i>Upload Bill</h5>
+                <form method="post" enctype="multipart/form-data" id="billForm">
+                    {% csrf_token %}
+
+                    <!-- Drag & Drop Zone -->
+                    <div class="mb-3">
+                        <label class="form-label">Bill Image <span class="text-danger">*</span></label>
+                        <div id="dropZone" class="glass-card-static text-center p-4" style="border:2px dashed var(--border-glass);cursor:pointer;transition:all 0.3s ease;">
+                            <i class="bi bi-image fs-1 text-muted" id="dropIcon"></i>
+                            <p class="text-muted mb-1 mt-2" id="dropText">Drag & drop your bill here or click to browse</p>
+                            <small class="text-muted">Supports JPG, PNG, JPEG</small>
+                            <img id="imagePreview" class="img-fluid rounded mt-2" style="display:none;max-height:200px;border:1px solid var(--border-glass);">
+                        </div>
+                        <div style="display:none;">{{ form.image }}</div>
+                    </div>
+
+                    <!-- Bill Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Bill Type <span class="text-danger">*</span></label>
+                        <div class="d-flex gap-2 flex-wrap" id="billTypeSelector">
+                            <button type="button" class="btn btn-glass btn-sm bill-type-btn" data-value="restaurant"><i class="bi bi-cup-hot me-1"></i>Restaurant</button>
+                            <button type="button" class="btn btn-glass btn-sm bill-type-btn" data-value="taxi"><i class="bi bi-taxi-front me-1"></i>Taxi</button>
+                            <button type="button" class="btn btn-glass btn-sm bill-type-btn" data-value="hotel"><i class="bi bi-building me-1"></i>Hotel</button>
+                            <button type="button" class="btn btn-glass btn-sm bill-type-btn" data-value="shopping"><i class="bi bi-bag me-1"></i>Shopping</button>
+                            <button type="button" class="btn btn-glass btn-sm bill-type-btn" data-value="other"><i class="bi bi-receipt me-1"></i>Other</button>
+                        </div>
+                        <div style="display:none;">{{ form.bill_type }}</div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-3">
+                        <label class="form-label">Location / Vendor Name</label>
+                        {{ form.location_name }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-7">
+                            <label class="form-label">Total on Bill</label>
+                            {{ form.total_amount }}
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label">Currency</label>
+                            {{ form.currency }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-glow w-100" id="analyzeBtn">
+                        <i class="bi bi-cpu me-2"></i>Analyze with AI
+                    </button>
+                </form>
+
+                <!-- What AI Detects -->
+                <div class="mt-4 p-3 glass-card-static">
+                    <h6 class="text-gradient mb-2"><i class="bi bi-lightning me-1"></i>AI Detection Capabilities</h6>
+                    <div class="row g-2">
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Hidden charges</small></div>
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Inflated prices</small></div>
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Fake taxes</small></div>
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Duplicate items</small></div>
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Tourist surcharges</small></div>
+                        <div class="col-6"><small class="text-muted"><i class="bi bi-check-circle text-success me-1"></i>Manipulated totals</small></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bills -->
         <div class="col-lg-7">
             <div class="glass-card-static mb-3">
-                <h5 class="mb-3"><i class="bi bi-clock-history me-2"></i>Recent Bills</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Recent Analyses</h5>
+                    {% if recent_bills %}<span class="badge-glass">{{ recent_bills|length }} bills</span>{% endif %}
+                </div>
                 {% if recent_bills %}
-                {% for bill in recent_bills %}
-                <a href="{% url 'scams:bill_detail' bill.pk %}" class="d-flex justify-content-between align-items-center py-2 text-decoration-none" {% if not forloop.last %}style="border-bottom:1px solid var(--border-glass);"{% endif %}>
-                    <div>
-                        <span class="text-dark">{{ bill.get_bill_type_display }}</span>
-                        <br><small class="text-muted">{{ bill.location_name|default:"Unknown" }} &middot; {{ bill.created_at|timesince }} ago</small>
-                    </div>
-                    <div class="text-end">
-                        {% if bill.total_amount %}<span class="text-dark">{{ bill.currency }} {{ bill.total_amount }}</span>{% endif %}
-                        <br>{% if bill.is_analyzed %}<span class="badge-verified">Analyzed</span>{% else %}<span class="badge-pending">Pending</span>{% endif %}
-                    </div>
-                </a>
-                {% endfor %}
+                <div class="table-responsive">
+                    <table class="table-glass">
+                        <thead>
+                            <tr>
+                                <th>Bill</th>
+                                <th>Location</th>
+                                <th>Amount</th>
+                                <th>Risk</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bill in recent_bills %}
+                            <tr style="cursor:pointer;" onclick="window.location='{% url 'scams:bill_detail' bill.pk %}'">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="category-icon cat-{% if bill.bill_type == 'restaurant' %}food{% elif bill.bill_type == 'taxi' %}taxi{% elif bill.bill_type == 'hotel' %}hotel{% else %}other{% endif %}" style="width:32px;height:32px;font-size:0.8rem;">
+                                            <i class="bi bi-{% if bill.bill_type == 'restaurant' %}cup-hot{% elif bill.bill_type == 'taxi' %}taxi-front{% elif bill.bill_type == 'hotel' %}building{% elif bill.bill_type == 'shopping' %}bag{% else %}receipt{% endif %}"></i>
+                                        </div>
+                                        <div>
+                                            <span style="color: var(--text-primary);">{{ bill.get_bill_type_display }}</span>
+                                            <br><small class="text-muted">{{ bill.created_at|timesince }} ago</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><small class="text-muted">{{ bill.location_name|default:"—"|truncatechars:15 }}</small></td>
+                                <td>
+                                    {% if bill.total_amount %}
+                                    <span style="color: var(--text-primary);">{{ bill.currency }} {{ bill.total_amount }}</span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with ocr=bill.ocr_result %}
+                                    {% if ocr %}
+                                    <span class="badge-scam badge-{% if ocr.scam_probability > 75 %}critical{% elif ocr.scam_probability > 50 %}high{% elif ocr.scam_probability > 25 %}medium{% else %}low{% endif %}">
+                                        {{ ocr.scam_probability|floatformat:0 }}%
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">—</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if bill.is_analyzed %}<span class="badge-verified">Analyzed</span>{% else %}<span class="badge-pending">Pending</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                <p class="text-muted text-center py-3">No bills uploaded yet.</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-receipt fs-1 text-muted"></i>
+                    <p class="text-muted mt-2">No bills analyzed yet. Upload your first bill!</p>
+                </div>
                 {% endif %}
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-lightbulb me-2 text-gradient"></i>Tips for Best Results</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="glass-card-static p-3 h-100">
+                            <h6 class="small fw-bold"><i class="bi bi-camera me-2 text-success"></i>Photo Quality</h6>
+                            <small class="text-muted">Ensure the bill text is clearly visible. Good lighting and focus help AI extract text accurately.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card-static p-3 h-100">
+                            <h6 class="small fw-bold"><i class="bi bi-info-circle me-2 text-info"></i>Enter Total Amount</h6>
+                            <small class="text-muted">Enter the total shown on the bill. AI compares it against fair market rates for your area.</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+// Drag & Drop + Image Preview
+(function() {
+    var dropZone = document.getElementById('dropZone');
+    var fileInput = document.getElementById('{{ form.image.id_for_label }}') || document.querySelector('input[type="file"]');
+    var preview = document.getElementById('imagePreview');
+    var dropIcon = document.getElementById('dropIcon');
+    var dropText = document.getElementById('dropText');
+
+    if (dropZone && fileInput) {
+        dropZone.addEventListener('click', function() { fileInput.click(); });
+
+        ['dragenter', 'dragover'].forEach(function(e) {
+            dropZone.addEventListener(e, function(ev) {
+                ev.preventDefault();
+                dropZone.style.borderColor = 'var(--accent-primary)';
+                dropZone.style.background = 'rgba(16,185,129,0.05)';
+            });
+        });
+        ['dragleave', 'drop'].forEach(function(e) {
+            dropZone.addEventListener(e, function(ev) {
+                ev.preventDefault();
+                dropZone.style.borderColor = '';
+                dropZone.style.background = '';
+            });
+        });
+        dropZone.addEventListener('drop', function(ev) {
+            ev.preventDefault();
+            if (ev.dataTransfer.files.length) {
+                fileInput.files = ev.dataTransfer.files;
+                showPreview(ev.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', function() {
+            if (fileInput.files.length) showPreview(fileInput.files[0]);
+        });
+    }
+
+    function showPreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                dropIcon.style.display = 'none';
+                dropText.textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Bill type selector
+    var btns = document.querySelectorAll('.bill-type-btn');
+    var hiddenSelect = document.querySelector('select[name="bill_type"]');
+    btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            btns.forEach(function(b) { b.classList.remove('active'); b.style.background = ''; b.style.color = ''; });
+            btn.classList.add('active');
+            btn.style.background = 'var(--accent-primary)';
+            btn.style.color = '#fff';
+            if (hiddenSelect) hiddenSelect.value = btn.getAttribute('data-value');
+        });
+    });
+})();
+</script>
 {% endblock %}

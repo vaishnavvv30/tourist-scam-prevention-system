@@ -60,7 +60,7 @@
                     <div class="col-sm-6">
                         <div class="stat-card text-start">
                             <span class="text-muted d-block small mb-1">Total Budget Target</span>
-                            <span class="fs-5 fw-bold">₹{{ trip.budget|intcomma }}</span>
+                            <span class="fs-5 fw-bold">{{ trip.currency_symbol }}{{ trip.budget|intcomma }}</span>
                         </div>
                     </div>
                     <div class="col-sm-6">
@@ -91,7 +91,7 @@
                                 <td>
                                     <span class="badge-glass"><i class="bi bi-car-front me-1"></i>{{ route.transport_mode }}</span>
                                 </td>
-                                <td class="fw-bold">₹{{ route.estimated_cost|intcomma }}</td>
+                                <td class="fw-bold">{{ trip.currency_symbol }}{{ route.estimated_cost|intcomma }}</td>
                             </tr>
                             {% empty %}
                             <tr>
@@ -135,13 +135,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     var mapEl = document.getElementById('tripMap');
     if (mapEl) {
-        var map = L.map('tripMap').setView([10.8505, 76.2711], 7);
+        var map = L.map('tripMap').setView([20, 0], 2);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
-        L.marker([10.8505, 76.2711]).addTo(map)
-            .bindPopup("<b>{{ trip.destination_name }}</b><br>Safe Zone area.")
-            .openPopup();
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent("{{ trip.destination_name|escapejs }}")}&limit=1`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    var lat = parseFloat(data[0].lat);
+                    var lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 12);
+                    L.marker([lat, lon]).addTo(map)
+                        .bindPopup("<b>{{ trip.destination_name }}</b><br>Trip Destination.")
+                        .openPopup();
+                }
+            }).catch(e => console.error("Could not load map coordinates"));
     }
 });
 </script>

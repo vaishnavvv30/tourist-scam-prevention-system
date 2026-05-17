@@ -23,6 +23,10 @@ class TripPlannerForm(forms.Form):
         decimal_places=2,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 5000'})
     )
+    currency = forms.ChoiceField(
+        choices=Trip.CURRENCIES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
     group_type = forms.ChoiceField(
         choices=Trip.GROUP_TYPES,
         widget=forms.Select(attrs={'class': 'form-select'})
@@ -35,6 +39,8 @@ class TripPlannerForm(forms.Form):
             'placeholder': 'e.g. waterfalls, trekking, safe food',
         })
     )
+
+
 
     def clean(self):
         cleaned_data = super().clean()
@@ -62,6 +68,7 @@ class TripPlannerForm(forms.Form):
             end_date=data['end_date'],
             duration_days=duration_days,
             budget=data['budget'],
+            currency=data['currency'],
             group_type=data['group_type'],
             preferences=data.get('preferences', ''),
         )

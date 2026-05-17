@@ -16,37 +16,7 @@
         </div>
     </div>
 
-    <!-- Stats Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-6 col-lg-3">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1;"><i class="bi bi-flag"></i></div>
-                <div class="stat-value" data-target="{{ total_reports }}">0</div>
-                <div class="stat-label">Your Reports</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981;"><i class="bi bi-shield-check"></i></div>
-                <div class="stat-value" data-target="{{ profile.scams_prevented }}">0</div>
-                <div class="stat-label">Scams Prevented</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="bi bi-shop"></i></div>
-                <div class="stat-value" data-target="{{ total_vendors }}">0</div>
-                <div class="stat-label">Verified Vendors</div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444;"><i class="bi bi-people"></i></div>
-                <div class="stat-value" data-target="{{ total_community_reports }}">0</div>
-                <div class="stat-label">Community Reports</div>
-            </div>
-        </div>
-    </div>
+
 
     <div class="row g-4">
         <!-- Quick Actions -->
@@ -60,15 +30,6 @@
                     <a href="{% url 'vendors:vendor_list' %}" class="btn btn-glass text-start"><i class="bi bi-shop me-2"></i>Find Trusted Vendors</a>
                     <a href="{% url 'scams:heatmap' %}" class="btn btn-glass text-start"><i class="bi bi-geo-alt me-2"></i>View Scam Heatmap</a>
                     <a href="{% url 'ai_engine:assistant' %}" class="btn btn-glass text-start"><i class="bi bi-robot me-2"></i>Ask AI Assistant</a>
-                </div>
-                <!-- User Badge -->
-                <div class="mt-3 p-3 glass-card-static text-center">
-                    <small class="text-muted d-block">Your Badge</small>
-                    <span class="fs-5 fw-bold" style="color: {{ profile.badge_color }};">{{ profile.badge }}</span>
-                    <div class="risk-meter mt-2">
-                        <div class="risk-meter-fill risk-low" data-width="{{ profile.trust_score }}" style="width:0%;"></div>
-                    </div>
-                    <small class="text-muted">Trust Score: {{ profile.trust_score|floatformat:0 }}/100</small>
                 </div>
             </div>
         </div>
@@ -95,7 +56,7 @@
                             {% for report in recent_reports %}
                             <tr>
                                 <td>
-                                    <a href="{% url 'scams:report_detail' report.pk %}" class="text-dark text-decoration-none">
+                                    <a href="{% url 'scams:report_detail' report.pk %}" class="text-decoration-none" style="color: var(--text-primary);">
                                         {{ report.title|truncatechars:35 }}
                                     </a>
                                     <br><small class="text-muted">{{ report.created_at|timesince }} ago</small>

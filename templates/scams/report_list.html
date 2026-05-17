@@ -54,7 +54,7 @@
                     <span class="badge-glass"><i class="bi bi-eye me-1"></i>{{ report.views_count }}</span>
                 </div>
                 <h6 class="mt-2 mb-1">
-                    <a href="{% url 'scams:report_detail' report.pk %}" class="text-dark text-decoration-none">{{ report.title|truncatechars:50 }}</a>
+                    <a href="{% url 'scams:report_detail' report.pk %}" class="text-decoration-none" style="color: var(--text-primary);">{{ report.title|truncatechars:50 }}</a>
                 </h6>
                 <p class="small text-muted mb-2">{{ report.description|truncatechars:100 }}</p>
                 <div class="d-flex gap-2 flex-wrap mb-2">
