@@ -49,27 +49,27 @@
                 <div class="d-flex flex-column gap-0">
                     <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
                         <div><i class="bi bi-building me-2" style="color: var(--info);"></i>Hotel / Stay</div>
-                        <span class="fw-bold">₹{{ budget.estimated_hotel_cost|intcomma }}</span>
+                        <span class="fw-bold">{{ trip.currency_symbol }}{{ budget.estimated_hotel_cost|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
                         <div><i class="bi bi-cup-hot me-2" style="color: var(--warning);"></i>Food & Dining</div>
-                        <span class="fw-bold">₹{{ budget.estimated_food_cost|intcomma }}</span>
+                        <span class="fw-bold">{{ trip.currency_symbol }}{{ budget.estimated_food_cost|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
                         <div><i class="bi bi-car-front me-2" style="color: var(--accent-primary);"></i>Transport</div>
-                        <span class="fw-bold">₹{{ budget.estimated_transport_cost|intcomma }}</span>
+                        <span class="fw-bold">{{ trip.currency_symbol }}{{ budget.estimated_transport_cost|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
                         <div><i class="bi bi-ticket-perforated me-2" style="color: var(--success);"></i>Activities & Entry Fees</div>
-                        <span class="fw-bold">₹{{ budget.estimated_activities_cost|intcomma }}</span>
+                        <span class="fw-bold">{{ trip.currency_symbol }}{{ budget.estimated_activities_cost|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color: var(--border-glass) !important;">
                         <div><i class="bi bi-shield-exclamation me-2" style="color: var(--danger);"></i>Emergency Buffer</div>
-                        <span class="fw-bold">₹{{ budget.emergency_buffer|intcomma }}</span>
+                        <span class="fw-bold">{{ trip.currency_symbol }}{{ budget.emergency_buffer|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center py-3">
                         <h5 class="mb-0 text-gradient">Total Estimated</h5>
-                        <h5 class="mb-0 text-gradient fw-bold">₹{{ budget.total_estimated|intcomma }}</h5>
+                        <h5 class="mb-0 text-gradient fw-bold">{{ trip.currency_symbol }}{{ budget.total_estimated|intcomma }}</h5>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
                         <div class="stat-card h-100">
                             <i class="bi bi-wallet2 text-muted fs-2 d-block mb-2"></i>
                             <h6 class="text-muted">Minimum (Backpacker)</h6>
-                            <h4 class="mb-0 fw-bold">₹{{ budget.minimum_budget|intcomma }}</h4>
+                            <h4 class="mb-0 fw-bold">{{ trip.currency_symbol }}{{ budget.minimum_budget|intcomma }}</h4>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -92,15 +92,15 @@
                             <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill" style="background: var(--accent-gradient);">Recommended</span>
                             <i class="bi bi-star fs-2 d-block mb-2" style="color: var(--accent-primary);"></i>
                             <h6 style="color: var(--accent-primary);">Standard Plan</h6>
-                            <h4 class="mb-1 fw-bold">₹{{ budget.total_estimated|intcomma }}</h4>
-                            <small class="text-muted">Matches your target ₹{{ trip.budget|intcomma }}</small>
+                            <h4 class="mb-1 fw-bold">{{ trip.currency_symbol }}{{ budget.total_estimated|intcomma }}</h4>
+                            <small class="text-muted">Matches your target {{ trip.currency_symbol }}{{ trip.budget|intcomma }}</small>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-card h-100">
                             <i class="bi bi-gem fs-2 d-block mb-2" style="color: var(--warning);"></i>
                             <h6 style="color: var(--warning);">Luxury / Premium</h6>
-                            <h4 class="mb-0 fw-bold">₹{{ budget.luxury_budget|intcomma }}</h4>
+                            <h4 class="mb-0 fw-bold">{{ trip.currency_symbol }}{{ budget.luxury_budget|intcomma }}</h4>
                         </div>
                     </div>
                 </div>
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 var label = context.label || '';
                                 if (label) { label += ': '; }
                                 if (context.parsed !== null) {
-                                    label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(context.parsed);
+                                    label += new Intl.NumberFormat('en-US', { style: 'currency', currency: '{{ trip.currency }}', maximumFractionDigits: 0 }).format(context.parsed);
                                 }
                                 return label;
                             }

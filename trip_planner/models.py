@@ -74,11 +74,20 @@ class Trip(models.Model):
         ('family', 'Family'),
         ('friends', 'Friends')
     ]
+    CURRENCIES = [
+        ('INR', 'INR (₹)'),
+        ('USD', 'USD ($)'),
+        ('EUR', 'EUR (€)'),
+        ('GBP', 'GBP (£)'),
+        ('JPY', 'JPY (¥)'),
+        ('AED', 'AED'),
+    ]
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trips')
     destination = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
     duration_days = models.IntegerField()
+    currency = models.CharField(max_length=3, choices=CURRENCIES, default='INR')
     budget = models.DecimalField(max_digits=12, decimal_places=2)
     group_type = models.CharField(max_length=20, choices=GROUP_TYPES)
     preferences = models.TextField(help_text="Comma separated interests like waterfalls, trekking, etc.")
@@ -88,6 +97,11 @@ class Trip(models.Model):
     def destination_name(self):
         """Helper to get destination name as a string."""
         return self.destination.name if self.destination else "Unknown"
+
+    @property
+    def currency_symbol(self):
+        symbols = {'INR': '₹', 'USD': '$', 'EUR': '€', 'GBP': '£', 'JPY': '¥', 'AED': 'AED'}
+        return symbols.get(self.currency, '₹')
 
     def __str__(self):
         return f"{self.user.username}'s trip to {self.destination_name} ({self.duration_days} days)"

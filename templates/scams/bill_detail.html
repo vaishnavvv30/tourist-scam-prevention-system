@@ -1,73 +1,261 @@
 {% extends 'base.html' %}
-{% block title %}Bill Analysis{% endblock %}
+{% block title %}Bill Analysis — {{ bill.get_bill_type_display }}{% endblock %}
 {% block content %}
 <div class="container py-4">
     <div class="page-header">
-        <nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'scams:bill_upload' %}">Bills</a></li><li class="breadcrumb-item active">Analysis</li></ol></nav>
-        <h1><i class="bi bi-receipt me-2"></i>Bill <span class="text-gradient">Analysis</span></h1>
-    </div>
-    <div class="row g-4">
-        <div class="col-lg-5">
-            <div class="glass-card-static mb-3">
-                <h5 class="mb-3">Bill Details</h5>
-                {% if bill.image %}<img src="{{ bill.image.url }}" alt="Bill" class="img-fluid rounded mb-3" style="border:1px solid var(--border-glass);">{% endif %}
-                <p><strong>Type:</strong> {{ bill.get_bill_type_display }}</p>
-                <p><strong>Location:</strong> {{ bill.location_name|default:"N/A" }}</p>
-                <p><strong>Total:</strong> {{ bill.currency }} {{ bill.total_amount|default:"N/A" }}</p>
-                <p><strong>Uploaded:</strong> {{ bill.created_at|date:"M d, Y H:i" }}</p>
+        <nav><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'scams:bill_upload' %}">Bills</a></li><li class="breadcrumb-item active">Analysis #{{ bill.pk }}</li></ol></nav>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="bi bi-receipt-cutoff me-2"></i>Bill <span class="text-gradient">Analysis</span></h1>
+                <p class="text-muted mb-0">AI-powered scam detection for your {{ bill.get_bill_type_display|lower }}</p>
             </div>
         </div>
-        <div class="col-lg-7">
-            {% if ocr_result %}
-            <div class="glass-card-static mb-3">
-                <h5 class="mb-3"><i class="bi bi-search me-2 text-gradient"></i>OCR Extraction</h5>
-                <div class="glass-card-static p-3 mb-3" style="max-height:200px;overflow-y:auto;">
-                    <pre class="text-secondary small mb-0" style="white-space:pre-wrap;">{{ ocr_result.extracted_text }}</pre>
+    </div>
+
+    {% if ocr_result %}
+    <!-- Risk Summary Banner -->
+    <div class="glass-card-static mb-4 p-4" style="border-left:4px solid {% if ocr_result.scam_probability > 75 %}var(--danger){% elif ocr_result.scam_probability > 50 %}#f59e0b{% elif ocr_result.scam_probability > 25 %}#6366f1{% else %}var(--success){% endif %};">
+        <div class="row align-items-center g-3">
+            <div class="col-md-3 text-center">
+                <div style="width:100px;height:100px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;background:{% if ocr_result.scam_probability > 75 %}rgba(239,68,68,0.15){% elif ocr_result.scam_probability > 50 %}rgba(245,158,11,0.15){% else %}rgba(16,185,129,0.15){% endif %};">
+                    <div>
+                        <span class="fs-2 fw-bold" style="color:{% if ocr_result.scam_probability > 75 %}var(--danger){% elif ocr_result.scam_probability > 50 %}#f59e0b{% else %}var(--success){% endif %};">{{ ocr_result.scam_probability|floatformat:0 }}%</span>
+                        <br><small class="text-muted">Scam Risk</small>
+                    </div>
                 </div>
-                <div class="row g-2 text-center mb-3">
-                    <div class="col-4">
+            </div>
+            <div class="col-md-5">
+                <h4 class="mb-1">
+                    {% if ocr_result.scam_probability > 75 %}
+                    <span class="text-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>High Risk — Likely Scam</span>
+                    {% elif ocr_result.scam_probability > 50 %}
+                    <span style="color:#f59e0b;"><i class="bi bi-exclamation-circle-fill me-1"></i>Moderate Risk — Suspicious</span>
+                    {% elif ocr_result.scam_probability > 25 %}
+                    <span style="color:#6366f1;"><i class="bi bi-info-circle-fill me-1"></i>Low Risk — Minor Concerns</span>
+                    {% else %}
+                    <span class="text-success"><i class="bi bi-shield-check me-1"></i>Safe — Fair Pricing</span>
+                    {% endif %}
+                </h4>
+                <div class="risk-meter mt-2"><div class="risk-meter-fill {% if ocr_result.scam_probability > 75 %}risk-high{% elif ocr_result.scam_probability > 50 %}risk-medium{% else %}risk-low{% endif %}" data-width="{{ ocr_result.scam_probability }}" style="width:0%;"></div></div>
+                <small class="text-muted">AI Confidence: {{ ocr_result.confidence_score|floatformat:0 }}%</small>
+            </div>
+            <div class="col-md-4">
+                <div class="row g-2 text-center">
+                    <div class="col-6">
                         <div class="glass-card-static p-2">
-                            <small class="text-muted d-block">Detected Total</small>
-                            <span class="fw-bold">{{ bill.currency }} {{ ocr_result.total_detected|default:"N/A" }}</span>
+                            <small class="text-muted d-block">Billed</small>
+                            <span class="fw-bold text-danger">{{ bill.currency }} {{ bill.total_amount|default:"—" }}</span>
                         </div>
                     </div>
-                    <div class="col-4">
+                    <div class="col-6">
                         <div class="glass-card-static p-2">
                             <small class="text-muted d-block">Fair Estimate</small>
-                            <span class="fw-bold text-success">{{ bill.currency }} {{ ocr_result.fair_price_estimate|default:"N/A" }}</span>
+                            <span class="fw-bold text-success">{{ bill.currency }} {{ ocr_result.fair_price_estimate|default:"—" }}</span>
+                        </div>
+                    </div>
+                    {% if ocr_result.total_detected and bill.total_amount %}
+                    <div class="col-12">
+                        <div class="glass-card-static p-2">
+                            <small class="text-muted d-block">Overcharge</small>
+                            {% widthratio ocr_result.fair_price_estimate|default:0 1 1 as fair %}
+                            <span class="fw-bold {% if ocr_result.scam_probability > 50 %}text-danger{% else %}text-success{% endif %}">
+                                {% if ocr_result.fair_price_estimate and bill.total_amount %}
+                                {{ bill.currency }} {{ bill.total_amount|floatformat:2 }} vs {{ bill.currency }} {{ ocr_result.fair_price_estimate|floatformat:2 }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Left Column: Bill Image + Details -->
+        <div class="col-lg-5">
+            <!-- Bill Image -->
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-image me-2"></i>Bill Image</h5>
+                {% if bill.image %}
+                <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border-glass);">
+                    <img src="{{ bill.image.url }}" alt="Bill" class="img-fluid w-100" style="cursor:zoom-in;" onclick="this.style.transform=this.style.transform==='scale(1.5)'?'scale(1)':'scale(1.5)';this.style.transition='transform 0.3s ease';">
+                </div>
+                {% else %}
+                <div class="text-center py-4 text-muted"><i class="bi bi-image fs-1"></i><p>No image</p></div>
+                {% endif %}
+            </div>
+
+            <!-- Bill Metadata -->
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Bill Details</h5>
+                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border-glass);">
+                    <span class="text-muted">Type</span>
+                    <span class="badge-glass"><i class="bi bi-{% if bill.bill_type == 'restaurant' %}cup-hot{% elif bill.bill_type == 'taxi' %}taxi-front{% elif bill.bill_type == 'hotel' %}building{% elif bill.bill_type == 'shopping' %}bag{% else %}receipt{% endif %} me-1"></i>{{ bill.get_bill_type_display }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border-glass);">
+                    <span class="text-muted">Location</span>
+                    <span style="color: var(--text-primary);">{{ bill.location_name|default:"Not specified" }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border-glass);">
+                    <span class="text-muted">Stated Total</span>
+                    <span class="fw-bold" style="color: var(--text-primary);">{{ bill.currency }} {{ bill.total_amount|default:"N/A" }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid var(--border-glass);">
+                    <span class="text-muted">Uploaded</span>
+                    <span style="color: var(--text-primary);">{{ bill.created_at|date:"M d, Y H:i" }}</span>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Analysis Status</span>
+                    {% if bill.is_analyzed %}<span class="badge-verified"><i class="bi bi-check-circle me-1"></i>Complete</span>{% else %}<span class="badge-pending">Processing</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: AI Analysis Results -->
+        <div class="col-lg-7">
+            {% if ocr_result %}
+
+            <!-- AI Analysis Summary — Primary Insight Card -->
+            <div class="glass-card-static mb-3" style="border-left:4px solid var(--accent-primary);position:relative;overflow:hidden;">
+                <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,rgba(16,185,129,0.08),rgba(99,102,241,0.08));pointer-events:none;"></div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0"><i class="bi bi-robot me-2 text-gradient"></i>AI Analysis Summary</h5>
+                    <span class="badge-glass"><i class="bi bi-cpu me-1"></i>Groq Vision AI</span>
+                </div>
+
+                {% if ocr_result.analysis_notes %}
+                <div class="glass-card-static p-3 mb-3" style="background:rgba(99,102,241,0.04);border:1px solid rgba(99,102,241,0.12);border-radius:12px;">
+                    <p style="color:var(--text-primary);line-height:1.8;margin-bottom:0;font-size:0.95rem;">{{ ocr_result.analysis_notes|linebreaksbr }}</p>
+                </div>
+                {% else %}
+                <div class="glass-card-static p-3 mb-3 text-center" style="border-radius:12px;">
+                    <i class="bi bi-hourglass-split text-muted fs-4"></i>
+                    <p class="text-muted mb-0 mt-2">AI analysis summary is being generated...</p>
+                </div>
+                {% endif %}
+
+                <!-- Key Metrics Row -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4">
+                        <div class="text-center p-2" style="border-radius:10px;background:{% if ocr_result.scam_probability > 50 %}rgba(239,68,68,0.08){% else %}rgba(16,185,129,0.08){% endif %};">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-shield-exclamation me-1"></i>Risk Level</small>
+                            <span class="fw-bold" style="color:{% if ocr_result.scam_probability > 75 %}var(--danger){% elif ocr_result.scam_probability > 50 %}#f59e0b{% elif ocr_result.scam_probability > 25 %}#6366f1{% else %}var(--success){% endif %};">
+                                {% if ocr_result.scam_probability > 75 %}High{% elif ocr_result.scam_probability > 50 %}Moderate{% elif ocr_result.scam_probability > 25 %}Low{% else %}Safe{% endif %}
+                            </span>
                         </div>
                     </div>
                     <div class="col-4">
-                        <div class="glass-card-static p-2">
-                            <small class="text-muted d-block">Scam Risk</small>
-                            <span class="fw-bold {% if ocr_result.scam_probability > 60 %}text-danger{% else %}text-success{% endif %}">{{ ocr_result.scam_probability|floatformat:0 }}%</span>
+                        <div class="text-center p-2" style="border-radius:10px;background:rgba(99,102,241,0.08);">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-bullseye me-1"></i>Confidence</small>
+                            <span class="fw-bold" style="color:var(--text-primary);">{{ ocr_result.confidence_score|floatformat:0 }}%</span>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-2" style="border-radius:10px;background:rgba(245,158,11,0.08);">
+                            <small class="text-muted d-block mb-1"><i class="bi bi-tags me-1"></i>Items Found</small>
+                            <span class="fw-bold" style="color:var(--text-primary);">{{ ocr_result.items_detected|length }}</span>
                         </div>
                     </div>
                 </div>
-                <div class="risk-meter"><div class="risk-meter-fill {% if ocr_result.scam_probability > 75 %}risk-high{% elif ocr_result.scam_probability > 50 %}risk-medium{% else %}risk-low{% endif %}" data-width="{{ ocr_result.scam_probability }}" style="width:0%;"></div></div>
-            </div>
 
-            {% if ocr_result.suspicious_charges %}
-            <div class="glass-card-static mb-3" style="border-left:3px solid var(--danger);">
-                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Suspicious Charges</h6>
-                <ul class="list-unstyled mb-0 mt-2">
+                {% if ocr_result.suspicious_charges %}
+                <div class="p-3 mb-2" style="border-radius:10px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);">
+                    <h6 class="text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i>Suspicious Charges</h6>
                     {% for charge in ocr_result.suspicious_charges %}
-                    <li class="small text-secondary mb-1"><i class="bi bi-x-circle text-danger me-1"></i>{{ charge }}</li>
+                    <div class="d-flex align-items-start gap-2 {% if not forloop.last %}mb-2{% endif %}">
+                        <i class="bi bi-x-circle-fill text-danger mt-1" style="font-size:0.75rem;"></i>
+                        <span style="color:var(--text-primary);font-size:0.9rem;">{{ charge }}</span>
+                    </div>
                     {% endfor %}
-                </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Items Detected -->
+            {% if ocr_result.items_detected %}
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-list-check me-2 text-gradient"></i>Items Detected</h5>
+                <div class="table-responsive">
+                    <table class="table-glass">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Item</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in ocr_result.items_detected %}
+                            <tr>
+                                <td><small class="text-muted">{{ forloop.counter }}</small></td>
+                                <td style="color: var(--text-primary);">{{ item.name }}</td>
+                                <td class="text-end fw-bold" style="color: var(--text-primary);">{{ bill.currency }} {{ item.price }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             {% endif %}
 
-            {% if ocr_result.analysis_notes %}
-            <div class="glass-card-static" style="border-left:3px solid var(--accent-primary);">
-                <h6><i class="bi bi-robot me-2 text-gradient"></i>AI Notes</h6>
-                <p class="small text-secondary mb-0">{{ ocr_result.analysis_notes }}</p>
+            <!-- Taxes Detected -->
+            {% if ocr_result.taxes_detected %}
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-percent me-2"></i>Taxes & Surcharges</h5>
+                {% for tax in ocr_result.taxes_detected %}
+                <div class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}{% endif %}" {% if not forloop.last %}style="border-bottom:1px solid var(--border-glass);"{% endif %}>
+                    <span style="color: var(--text-primary);"><i class="bi bi-receipt me-2 text-muted"></i>{{ tax.type }}</span>
+                    <span class="fw-bold" style="color: var(--text-primary);">{{ bill.currency }} {{ tax.amount }}</span>
+                </div>
+                {% endfor %}
             </div>
             {% endif %}
+
+            <!-- Fair Price Comparison -->
+            {% if ocr_result.fair_price_estimate and bill.total_amount %}
+            <div class="glass-card-static mb-3">
+                <h5 class="mb-3"><i class="bi bi-graph-up-arrow me-2 text-gradient"></i>Fair Price Comparison</h5>
+                <div class="row g-3 text-center">
+                    <div class="col-4">
+                        <div class="glass-card-static p-3">
+                            <small class="text-muted d-block mb-1">You Paid</small>
+                            <span class="fs-5 fw-bold text-danger">{{ bill.currency }} {{ bill.total_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div class="col-4 d-flex align-items-center justify-content-center">
+                        <i class="bi bi-arrow-right fs-3 text-muted"></i>
+                    </div>
+                    <div class="col-4">
+                        <div class="glass-card-static p-3">
+                            <small class="text-muted d-block mb-1">Fair Price</small>
+                            <span class="fs-5 fw-bold text-success">{{ bill.currency }} {{ ocr_result.fair_price_estimate|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="glass-card-static">
+                <h5 class="mb-3"><i class="bi bi-lightning me-2 text-gradient"></i>Actions</h5>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'scams:report_create' %}" class="btn btn-primary-glow"><i class="bi bi-flag me-1"></i>Report This Scam</a>
+                    <a href="{% url 'scams:bill_upload' %}" class="btn btn-glass"><i class="bi bi-plus-lg me-1"></i>Analyze Another</a>
+                    <a href="{% url 'scams:price_check' %}" class="btn btn-glass"><i class="bi bi-calculator me-1"></i>Check Price</a>
+                </div>
+            </div>
+
             {% else %}
+            <!-- Loading State -->
             <div class="glass-card-static text-center py-5">
                 <div class="spinner-glow mx-auto mb-3"></div>
-                <p class="text-muted">Analysis is being processed...</p>
+                <h5>AI is analyzing your bill...</h5>
+                <p class="text-muted">This typically takes 5-15 seconds. Refresh to see results.</p>
+                <button onclick="location.reload()" class="btn btn-glass mt-2"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
             </div>
             {% endif %}
         </div>

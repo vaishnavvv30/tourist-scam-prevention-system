@@ -174,7 +174,7 @@ def bill_upload(request):
     else:
         form = BillUploadForm()
 
-    recent_bills = Bill.objects.filter(user=request.user)[:10]
+    recent_bills = Bill.objects.filter(user=request.user).select_related('ocr_result')[:10]
     return render(request, 'scams/bill_upload.html', {'form': form, 'recent_bills': recent_bills})
 
 
@@ -185,10 +185,22 @@ def bill_detail(request, pk):
     ocr_result = getattr(bill, 'ocr_result', None)
     ai_analyses = bill.ai_analyses.all()
 
+    # Compute overcharge percentage for display
+    overcharge_pct = None
+    if ocr_result and ocr_result.fair_price_estimate and bill.total_amount:
+        try:
+            fair = float(ocr_result.fair_price_estimate)
+            total = float(bill.total_amount)
+            if fair > 0:
+                overcharge_pct = round(((total - fair) / fair) * 100, 1)
+        except (ValueError, TypeError):
+            pass
+
     context = {
         'bill': bill,
         'ocr_result': ocr_result,
         'ai_analyses': ai_analyses,
+        'overcharge_pct': overcharge_pct,
     }
     return render(request, 'scams/bill_detail.html', context)
 

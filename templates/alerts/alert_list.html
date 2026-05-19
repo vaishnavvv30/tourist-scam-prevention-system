@@ -15,7 +15,7 @@
                 </div>
                 <div>
                     <h6 class="mb-1">
-                        <a href="{% url 'alerts:alert_detail' alert.pk %}" class="text-dark text-decoration-none">{{ alert.title }}</a>
+                        <a href="{% url 'alerts:alert_detail' alert.pk %}" class="text-decoration-none" style="color: var(--text-primary);">{{ alert.title }}</a>
                     </h6>
                     <p class="small text-muted mb-1">{{ alert.description|truncatechars:150 }}</p>
                     <div class="d-flex gap-2 flex-wrap">

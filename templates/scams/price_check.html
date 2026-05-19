@@ -33,11 +33,26 @@
                     <div class="col-4">
                         <div class="glass-card-static p-3">
                             <small class="text-muted d-block">Verdict</small>
-                            {% if result.is_fair %}
-                            <span class="fs-4 text-success"><i class="bi bi-check-circle"></i></span>
+                            {% if result.verdict == 'Fair Price' %}
+                            <span class="fs-4 text-success"><i class="bi bi-check-circle-fill"></i></span>
+                            <br><small class="text-success fw-bold">Fair Price</small>
+                            {% elif result.verdict == 'Slightly Expensive' %}
+                            <span class="fs-4" style="color:#6366f1;"><i class="bi bi-info-circle-fill"></i></span>
+                            <br><small class="fw-bold" style="color:#6366f1;">Slightly Expensive</small>
+                            {% elif result.verdict == 'Tourist Area Pricing' %}
+                            <span class="fs-4" style="color:#f59e0b;"><i class="bi bi-exclamation-circle-fill"></i></span>
+                            <br><small class="fw-bold" style="color:#f59e0b;">Tourist Pricing</small>
+                            {% elif result.verdict == 'Overpriced' %}
+                            <span class="fs-4 text-danger"><i class="bi bi-x-circle-fill"></i></span>
+                            <br><small class="text-danger fw-bold">Overpriced</small>
+                            {% elif result.verdict == 'Suspiciously High' %}
+                            <span class="fs-4 text-danger"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                            <br><small class="text-danger fw-bold">Suspiciously High</small>
+                            {% elif result.is_fair %}
+                            <span class="fs-4 text-success"><i class="bi bi-check-circle-fill"></i></span>
                             <br><small class="text-success fw-bold">Fair Price</small>
                             {% else %}
-                            <span class="fs-4 text-danger"><i class="bi bi-x-circle"></i></span>
+                            <span class="fs-4 text-danger"><i class="bi bi-x-circle-fill"></i></span>
                             <br><small class="text-danger fw-bold">Overpriced</small>
                             {% endif %}
                         </div>
@@ -51,7 +66,7 @@
                     <div class="col-4">
                         <div class="glass-card-static p-3">
                             <small class="text-muted d-block">Scam Risk</small>
-                            <span class="fw-bold {% if result.scam_probability > 60 %}text-danger{% elif result.scam_probability > 30 %}text-warning{% else %}text-success{% endif %}">{{ result.scam_probability|floatformat:0 }}%</span>
+                            <span class="fw-bold {% if result.scam_probability > 60 %}text-danger{% elif result.scam_probability > 30 %}text-warning{% elif result.scam_probability > 10 %}{% else %}text-success{% endif %}" {% if result.scam_probability > 10 and result.scam_probability <= 30 %}style="color:#6366f1;"{% endif %}>{{ result.scam_probability|floatformat:0 }}%</span>
                         </div>
                     </div>
                 </div>

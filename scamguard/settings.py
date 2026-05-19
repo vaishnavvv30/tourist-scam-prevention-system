@@ -1,6 +1,3 @@
-"""
-Django settings for ScamGuard AI - Tourist Price Scam Prevention System.
-"""
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -36,6 +33,7 @@ INSTALLED_APPS = [
     'analytics.apps.AnalyticsConfig',
     'alerts.apps.AlertsConfig',
     'trip_planner.apps.TripPlannerConfig',
+    'rag_engine.apps.RagEngineConfig',
 ]
 
 MIDDLEWARE = [

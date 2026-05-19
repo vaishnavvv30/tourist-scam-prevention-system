@@ -32,6 +32,11 @@
     --radius-xl: 24px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Doodle Visibility System - Light Theme */
+    --doodle-color: #0d9488; /* Slightly darker teal */
+    --doodle-opacity: 0.15; /* Medium opacity for visibility */
+    --doodle-glow: none;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -766,9 +771,11 @@ a:hover { color: var(--accent-secondary); }
 .travel-icon {
     position: absolute;
     font-size: 1.5rem;
-    opacity: 0.04;
-    color: var(--accent-primary);
+    color: var(--doodle-color);
+    opacity: var(--doodle-opacity);
+    text-shadow: var(--doodle-glow);
     animation: travelFloat linear infinite;
+    transition: opacity 0.5s ease, color 0.5s ease, text-shadow 0.5s ease;
 }
 
 .travel-icon:nth-child(1) { left: 5%; font-size: 2rem; animation-duration: 25s; animation-delay: 0s; }
@@ -784,8 +791,8 @@ a:hover { color: var(--accent-secondary); }
 
 @keyframes travelFloat {
     0% { transform: translateY(105vh) rotate(0deg); opacity: 0; }
-    10% { opacity: 0.05; }
-    90% { opacity: 0.05; }
+    10% { opacity: var(--doodle-opacity); }
+    90% { opacity: var(--doodle-opacity); }
     100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
 }
 
@@ -889,6 +896,11 @@ p { color: #475569; }
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
     --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+    
+    /* Doodle Visibility System - Dark Theme */
+    --doodle-color: #2dd4bf; /* Soft cyan */
+    --doodle-opacity: 0.12; /* Noticeable but subtle opacity */
+    --doodle-glow: 0 0 15px rgba(45, 212, 191, 0.5); /* Soft cyan glow */
 }
 
 [data-theme="dark"] body {

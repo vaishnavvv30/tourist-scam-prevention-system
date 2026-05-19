@@ -108,21 +108,3 @@ def add_review(request, pk):
     return render(request, 'vendors/add_review.html', {'form': form, 'vendor': vendor})
 
 
-@login_required
-def vendor_map(request):
-    """Display vendors on a map."""
-    import json
-    vendors = Vendor.objects.filter(
-        is_active=True,
-        latitude__isnull=False,
-        longitude__isnull=False
-    ).exclude(latitude=0, longitude=0).values(
-        'id', 'name', 'category', 'city', 'trust_score',
-        'safety_rating', 'latitude', 'longitude',
-        'is_verified', 'price_range'
-    )
-
-    context = {
-        'vendors_json': json.dumps(list(vendors), default=str),
-    }
-    return render(request, 'vendors/vendor_map.html', context)

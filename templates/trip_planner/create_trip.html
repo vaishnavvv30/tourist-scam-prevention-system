@@ -40,5 +40,158 @@
         document.getElementById('btnLoader').classList.remove('d-none');
         document.getElementById('submitBtn').disabled = true;
     });
+
+    // Autocomplete for Destination using Nominatim
+    const destInput = document.getElementById('id_destination');
+    if (destInput) {
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        destInput.parentNode.insertBefore(wrapper, destInput);
+        wrapper.appendChild(destInput);
+
+        const suggestionBox = document.createElement('ul');
+        suggestionBox.className = 'list-group position-absolute w-100 shadow-sm d-none';
+        suggestionBox.style.zIndex = '1000';
+        suggestionBox.style.maxHeight = '250px';
+        suggestionBox.style.overflowY = 'auto';
+        wrapper.appendChild(suggestionBox);
+
+        let timeout = null;
+        const queryCache = new Map();
+
+        destInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            const query = this.value.trim();
+            if (query.length < 3) {
+                suggestionBox.classList.add('d-none');
+                return;
+            }
+
+            if (queryCache.has(query)) {
+                renderSuggestions(queryCache.get(query));
+                return;
+            }
+
+            suggestionBox.innerHTML = '<li class="list-group-item text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Searching destinations...</li>';
+            suggestionBox.classList.remove('d-none');
+
+            timeout = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=8&extratags=1`)
+                    .then(res => res.json())
+                    .then(data => {
+                        queryCache.set(query, data);
+                        renderSuggestions(data);
+                    }).catch(err => {
+                        suggestionBox.innerHTML = '<li class="list-group-item text-danger">Error fetching results.</li>';
+                        console.error(err);
+                    });
+            }, 400);
+        });
+
+        function renderSuggestions(data) {
+            suggestionBox.innerHTML = '';
+            if (data.length > 0) {
+                suggestionBox.classList.remove('d-none');
+                data.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item list-group-item-action text-dark d-flex align-items-center py-2';
+                    li.style.cursor = 'pointer';
+                    
+                    let icon = 'bi-geo-alt';
+                    if (item.type === 'city' || item.type === 'town') icon = 'bi-building text-primary';
+                    else if (item.type === 'country') icon = 'bi-globe text-success';
+                    else if (item.type === 'state' || item.type === 'region') icon = 'bi-map text-info';
+                    else if (item.class === 'tourism' || item.class === 'historic') icon = 'bi-camera text-warning';
+                    
+                    let parts = [];
+                    if (item.name) parts.push(`<strong>${item.name}</strong>`);
+                    else if (item.address.city || item.address.town || item.address.village) parts.push(`<strong>${item.address.city || item.address.town || item.address.village}</strong>`);
+                    
+                    let subParts = [];
+                    if (item.address.state || item.address.region) subParts.push(item.address.state || item.address.region);
+                    if (item.address.country) subParts.push(item.address.country);
+                    
+                    let displayName = parts.join(', ');
+                    if (subParts.length > 0) {
+                        displayName += ` <small class="text-muted ms-1">(${subParts.join(', ')})</small>`;
+                    }
+
+                    li.innerHTML = `<i class="bi ${icon} me-3 fs-5"></i> <div>${displayName}</div>`;
+                    
+                    li.addEventListener('click', () => {
+                        const cleanName = item.display_name.split(',').slice(0,3).join(',');
+                        destInput.value = cleanName.trim();
+                        suggestionBox.classList.add('d-none');
+                        fetchPreferences(cleanName.trim());
+                    });
+                    suggestionBox.appendChild(li);
+                });
+            } else {
+                suggestionBox.innerHTML = '<li class="list-group-item text-muted">No destinations found.</li>';
+                suggestionBox.classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!wrapper.contains(e.target)) {
+                suggestionBox.classList.add('d-none');
+            }
+        });
+    }
+
+    function fetchPreferences(destination) {
+        const preferencesField = document.getElementById('id_preferences');
+        if (!preferencesField) return;
+
+        let chipsContainer = document.getElementById('pref-chips');
+        if (!chipsContainer) {
+            chipsContainer = document.createElement('div');
+            chipsContainer.id = 'pref-chips';
+            chipsContainer.className = 'mt-2 d-flex flex-wrap gap-2';
+            preferencesField.parentNode.appendChild(chipsContainer);
+        }
+        chipsContainer.innerHTML = '<span class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Loading suggestions for ' + destination + '...</span>';
+
+        fetch('/ai/api/chat/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                message: `List exactly 4 famous tourist attractions or activities in ${destination}. Return ONLY a comma-separated list. No intro, no bullets.`
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            chipsContainer.innerHTML = '';
+            if (data.response) {
+                const suggestions = data.response.split(',').map(s => s.trim()).filter(s => s);
+                suggestions.forEach(s => {
+                    const chip = document.createElement('span');
+                    chip.className = 'badge rounded-pill p-2';
+                    chip.style.backgroundColor = 'var(--accent-primary)';
+                    chip.style.color = 'white';
+                    chip.style.cursor = 'pointer';
+                    chip.innerHTML = '<i class="bi bi-plus-circle me-1"></i>' + s;
+                    chip.addEventListener('click', () => {
+                        const currentVal = preferencesField.value.trim();
+                        if (currentVal) {
+                            if (!currentVal.includes(s)) preferencesField.value = currentVal + ', ' + s;
+                        } else {
+                            preferencesField.value = s;
+                        }
+                        chip.style.backgroundColor = 'var(--success)';
+                        chip.innerHTML = '<i class="bi bi-check-circle me-1"></i>' + s;
+                    });
+                    chipsContainer.appendChild(chip);
+                });
+            }
+        })
+        .catch(err => {
+            chipsContainer.innerHTML = '';
+            console.error(err);
+        });
+    }
 </script>
 {% endblock %}

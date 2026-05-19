@@ -17,18 +17,7 @@
                 </div>
                 {% endif %}
                 <h4>{{ user.get_full_name|default:user.username }}</h4>
-                <span class="badge-glass">{{ profile.get_travel_experience_display }}</span>
-                <div class="mt-3">
-                    <span class="fw-bold fs-5" style="color:{{ profile.badge_color }};">{{ profile.badge }}</span>
-                    <div class="risk-meter mt-2">
-                        <div class="risk-meter-fill risk-low" data-width="{{ profile.trust_score }}" style="width:0%;"></div>
-                    </div>
-                    <small class="text-muted">Trust Score: {{ profile.trust_score|floatformat:0 }}/100</small>
-                </div>
-                <div class="row mt-3 g-2 text-center">
-                    <div class="col-6"><div class="glass-card-static p-2"><span class="text-gradient fw-bold">{{ profile.reports_count }}</span><br><small class="text-muted">Reports</small></div></div>
-                    <div class="col-6"><div class="glass-card-static p-2"><span class="text-gradient fw-bold">{{ profile.scams_prevented }}</span><br><small class="text-muted">Prevented</small></div></div>
-                </div>
+
             </div>
         </div>
         <div class="col-lg-8">
@@ -61,10 +50,7 @@
                             <label class="form-label">Current City</label>
                             {{ p_form.current_city }}
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Travel Experience</label>
-                            {{ p_form.travel_experience }}
-                        </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Avatar</label>
                             {{ p_form.avatar }}

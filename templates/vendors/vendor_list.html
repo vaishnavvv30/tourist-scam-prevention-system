@@ -10,7 +10,6 @@
             </div>
             <div class="d-flex gap-2">
                 <a href="{% url 'vendors:vendor_create' %}" class="btn btn-primary-glow"><i class="bi bi-plus-lg me-1"></i>Add Vendor</a>
-                <a href="{% url 'vendors:vendor_map' %}" class="btn btn-glass"><i class="bi bi-map me-1"></i>Map View</a>
             </div>
         </div>
     </div>
@@ -55,7 +54,7 @@
                 {% if vendor.image %}
                 <img src="{{ vendor.image.url }}" alt="{{ vendor.name }}" class="img-fluid rounded mb-2" style="height:140px;width:100%;object-fit:cover;border:1px solid var(--border-glass);">
                 {% endif %}
-                <h6><a href="{% url 'vendors:vendor_detail' vendor.pk %}" class="text-dark text-decoration-none">{{ vendor.name }}</a></h6>
+                <h6><a href="{% url 'vendors:vendor_detail' vendor.pk %}" class="text-decoration-none" style="color: var(--text-primary);">{{ vendor.name }}</a></h6>
                 <small class="text-muted d-block mb-2"><i class="bi bi-geo-alt me-1"></i>{{ vendor.city }}, {{ vendor.country }}</small>
                 <div class="d-flex justify-content-between align-items-center">
                     <div>

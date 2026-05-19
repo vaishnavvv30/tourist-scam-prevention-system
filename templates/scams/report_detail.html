@@ -58,7 +58,7 @@
                 {% for sr in similar_reports %}
                 <div class="d-flex justify-content-between align-items-center py-2" {% if not forloop.last %}style="border-bottom:1px solid var(--border-glass);"{% endif %}>
                     <div>
-                        <a href="{% url 'scams:report_detail' sr.pk %}" class="text-dark text-decoration-none">{{ sr.title|truncatechars:45 }}</a>
+                        <a href="{% url 'scams:report_detail' sr.pk %}" class="text-decoration-none" style="color: var(--text-primary);">{{ sr.title|truncatechars:45 }}</a>
                         <br><small class="text-muted">{{ sr.location_name|default:"Unknown location" }}</small>
                     </div>
                     <span class="badge-scam badge-{{ sr.severity }}">{{ sr.scam_probability|floatformat:0 }}%</span>
